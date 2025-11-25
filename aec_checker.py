@@ -62,10 +62,37 @@ def tui():
     # 3. Ask for output filename
     output_file = questionary.text("Enter output filename:", default="aec_result.csv").ask()
     
-    # 4. Run Checker
+    # 4. Check for resume
+    skip_count = 0
+    if os.path.exists(output_file):
+        try:
+            with open(output_file, 'r') as f:
+                # Count lines in output file (minus header)
+                lines = sum(1 for _ in f)
+                if lines > 1:
+                    skip_count = lines - 1
+                    resume = questionary.confirm(
+                        f"Output file exists with {skip_count} entries. Resume from there?",
+                        default=True
+                    ).ask()
+                    if not resume:
+                        skip_count = 0
+                        overwrite = questionary.confirm("Overwrite existing file?", default=False).ask()
+                        if not overwrite:
+                            console.print("[yellow]Aborted.[/yellow]")
+                            return
+                        # If overwriting, we don't need to do anything special, check_rows handles append/write
+                        # But check_rows appends by default. If we want to overwrite, we should probably delete it or handle it.
+                        # The current check_rows implementation appends.
+                        # Let's delete it if we are not resuming and want to overwrite.
+                        os.remove(output_file)
+        except Exception:
+            pass
+
+    # 5. Run Checker
     console.print(f"[blue]Starting AEC Check on {file_to_process}...[/blue]")
     try:
-        check_rows(file_to_process, output_file, skip=0)
+        check_rows(file_to_process, output_file, skip=skip_count)
         console.print(f"[green]Check complete! Results saved to {output_file}[/green]")
     except Exception as e:
         console.print(f"[red]Error during check: {escape(str(e))}[/red]")

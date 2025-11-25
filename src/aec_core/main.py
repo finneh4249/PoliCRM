@@ -4,9 +4,15 @@ import csv
 import argparse
 import time
 import logging
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
 
 from .models import EXPECTED_FIELDS, OUTPUT_FIELDS
 from .browser import get_driver, getAECStatus
+
+
+def count_rows(filename):
+    with open(filename, "r", encoding="utf-8") as f:
+        return sum(1 for _ in f) - 1  # Subtract header
 
 
 def check_rows(
@@ -15,6 +21,11 @@ def check_rows(
     skip: int,
     nationbuilder_base="https://futureparty.nationbuilder.com/admin/signups/",
 ):
+    total_rows = count_rows(input_filename)
+    
+    # If we are skipping, adjust the total for the progress bar
+    total_to_process = total_rows - skip
+
     with get_driver() as driver:
         driver.get("https://check.aec.gov.au/")
         with io.open(input_filename) as csvfile:
@@ -23,8 +34,10 @@ def check_rows(
                 raise ValueError(
                     f"Some fields are missing from this file: one of {', '.join(EXPECTED_FIELDS)}"
                 )
+            
             row_count = 0
             existing_output = os.path.exists(output_filename)
+            
             with io.open(
                 output_filename,
                 "a",
@@ -33,35 +46,62 @@ def check_rows(
                 writer = csv.DictWriter(output_file, fieldnames=OUTPUT_FIELDS)
                 if not existing_output:
                     writer.writeheader()
-                for membership_row in reader:
-                    row_count += 1
-                    output_row = {k: membership_row.get(k) for k in OUTPUT_FIELDS}
-                    output_row["nationbuilder_link"] = nationbuilder_base + str(
-                        membership_row["nationbuilder_id"]
-                    )
-                    if row_count <= skip:
-                        # Assume that this has already been written as output.
-                        continue
-                    if not membership_row["first_name"]:
-                        # A member needs a  name
-                        continue
-                    time.sleep(0.1)
-                    status = getAECStatus(driver, membership_row)
-                    logging.info(
-                        f"The result for {membership_row['first_name']} "
-                        f"{membership_row['last_name']} "
-                        f"({membership_row['nationbuilder_id']}) was {status[0]}"
-                    )
-                    output_row.update(
-                        {
-                            "AEC_result": status[0],
-                            "federal_division": status[1],
-                            "state_division": status[2],
-                            "local_government": status[3],
-                            "local_ward": status[4],
-                        }
-                    )
-                    writer.writerow(output_row)
+
+                with Progress(
+                    SpinnerColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    BarColumn(),
+                    TaskProgressColumn(),
+                    TimeRemainingColumn(),
+                ) as progress:
+                    task = progress.add_task("[cyan]Verifying...", total=total_rows)
+                    
+                    # Advance progress for skipped rows
+                    if skip > 0:
+                        progress.advance(task, advance=skip)
+
+                    for membership_row in reader:
+                        row_count += 1
+                        
+                        if row_count <= skip:
+                            continue
+
+                        output_row = {k: membership_row.get(k) for k in OUTPUT_FIELDS}
+                        output_row["nationbuilder_link"] = nationbuilder_base + str(
+                            membership_row["nationbuilder_id"]
+                        )
+
+                        if not membership_row["first_name"]:
+                            # A member needs a name
+                            progress.advance(task)
+                            continue
+
+                        time.sleep(0.1)
+                        
+                        # Update description to show who we are checking
+                        name = f"{membership_row['first_name']} {membership_row['last_name']}"
+                        progress.update(task, description=f"[cyan]Verifying {name}...")
+                        
+                        status = getAECStatus(driver, membership_row)
+                        
+                        # Log result (will appear above progress bar if using RichHandler)
+                        logging.info(
+                            f"Result for {name} ({membership_row['nationbuilder_id']}): {status[0]}"
+                        )
+                        
+                        output_row.update(
+                            {
+                                "AEC_result": status[0],
+                                "federal_division": status[1],
+                                "state_division": status[2],
+                                "local_government": status[3],
+                                "local_ward": status[4],
+                            }
+                        )
+                        writer.writerow(output_row)
+                        output_file.flush() # Ensure data is written in case of crash
+                        
+                        progress.advance(task)
 
 
 def main():
