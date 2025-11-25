@@ -3,9 +3,9 @@ import sys
 import os
 
 # Add the parent directory to sys.path to import the module
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
-from convert_addresses import convert_state, convert_address  # noqa: E402
+from utils.convert_addresses import convert_state, convert_address  # noqa: E402
 
 
 class TestConvertAddresses(unittest.TestCase):

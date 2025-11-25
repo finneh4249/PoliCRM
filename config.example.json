@@ -1,0 +1,18 @@
+{
+  "threads": 1,
+  "headless": false,
+  "max_retries": 3,
+  "delay_min": 1.5,
+  "delay_max": 3.0,
+  "request_timeout": 15,
+  "nationbuilder_base": "https://futureparty.nationbuilder.com/admin/signups/",
+  "input_file": "input.csv",
+  "output_file": "output.csv",
+  "skip": 0,
+  "normalize_addresses": true,
+  "logging": {
+    "level": "INFO",
+    "file": "aec_checker.log",
+    "console": true
+  }
+}

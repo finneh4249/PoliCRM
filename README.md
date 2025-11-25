@@ -39,18 +39,55 @@ python aec_checker.py
 This will guide you through:
 1.  Selecting an input CSV file.
 2.  Optionally normalizing addresses (using `convert_addresses.py`).
-3.  Running the AEC verification.
+3.  Choosing validation mode (dry-run) to check data without performing AEC checks.
+4.  Configuring advanced options (retry attempts, delays between requests).
+5.  Running the AEC verification with progress tracking.
+6.  Creating filtered output files based on results.
 
 ### Command Line Interface
 
-You can still run the tools individually via the command line.
+You can run the tools with command-line arguments for automation:
+
+```bash
+python aec_checker.py --infile input.csv --outfile output.csv --threads 2 --headless
+```
+
+#### Enhanced Arguments
+
+-   `--infile`: Path to the input CSV file (default: `input.csv`).
+-   `--outfile`: Path to the output CSV file (default: `output.csv`).
+-   `--skip`: Number of entries to skip (useful for resuming interrupted runs).
+-   `--threads`: Number of concurrent browser threads (default: 1, recommend 2-3 max).
+-   `--headless`: Run browsers in headless mode (no visible windows).
+-   `--dry-run`: Validate input data without performing AEC checks.
+-   `--max-retries`: Maximum retry attempts per record (default: 3).
+-   `--delay-min`: Minimum delay between requests in seconds (default: 1.5).
+-   `--delay-max`: Maximum delay between requests in seconds (default: 3.0).
+
+### Example Workflows
+
+#### Validate Data Quality
+```bash
+python aec_checker.py --infile members.csv --dry-run
+```
+
+#### Production Run with Retries
+```bash
+python aec_checker.py --infile members.csv --outfile verified.csv \
+  --threads 2 --headless --max-retries 5 --delay-min 2.0 --delay-max 4.0
+```
+
+#### Resume Interrupted Job
+```bash
+python aec_checker.py --infile members.csv --outfile verified.csv --skip 150
+```
 
 #### 1. Prepare your Data (Optional)
 
 Raw data often contains inconsistent address formats (e.g., "Street" vs "St", "Victoria" vs "VIC"). The `convert_addresses.py` utility helps normalize these to match AEC expectations.
 
 ```bash
-python convert_addresses.py <input.csv> <output.csv>
+python src/utils/convert_addresses.py <input.csv> <output.csv>
 ```
 
 -   **Input**: A CSV file (e.g., exported from NationBuilder).
@@ -104,19 +141,65 @@ The output file will contain the original member details plus:
 The AEC website has strict anti-bot protections. If you see this error or if the script fails to verify valid details:
 1.  **Disable VPNs**: Ensure you are not connected to a VPN.
 2.  **Browser**: The script is configured to use Firefox to better mimic human behavior. Ensure Firefox is up to date.
-3.  **Rate Limiting**: If you run the script too fast or for too many records, you might be temporarily blocked. The script includes delays to mitigate this.
+3.  **Rate Limiting**: If you run the script too fast or for too many records, you might be temporarily blocked. 
+    - Use `--delay-min 2.0 --delay-max 4.0` for more conservative timing
+    - Reduce thread count to 1-2 with `--threads 2`
+    - The script includes automatic retry logic to handle transient issues
+
+### CAPTCHA Challenges
+
+If you encounter CAPTCHA challenges:
+1.  **Increase delays**: Use longer delays between requests (e.g., `--delay-min 3.0 --delay-max 5.0`)
+2.  **Reduce threads**: Use `--threads 1` to minimize detection
+3.  **Monitor logs**: Check `aec_checker.log` for CAPTCHA warnings
+4.  **Manual intervention**: The script will detect CAPTCHAs and pause with longer delays
+
+### Browser Crashes
+
+The script now includes automatic browser recovery:
+-   If a browser crashes, the thread will automatically restart it
+-   Progress is saved after each record, so no work is lost
+-   Check logs for repeated crash patterns which may indicate system issues
 
 ### "Element click intercepted" or Selection Errors
 
-The script interacts with complex dropdowns on the AEC site. If it fails to select a street or suburb that you know is correct:
--   Check the `convert_addresses.py` output to ensure the address format matches what the AEC expects (e.g., "RD" instead of "ROAD").
--   The script attempts to handle the AEC's autocomplete dropdowns, but UI changes on the AEC site can break this.
+The script interacts with complex dropdowns on the AEC site. If it fails to select a street or suburb:
+-   Use the address normalization feature: `--normalize` or select it in TUI
+-   Check the `convert_addresses.py` output to ensure the address format matches AEC expectations
+-   The script now includes retry logic to handle transient UI issues
+-   Review `aec_checker.log` for specific error details
+
+### Invalid Input Data
+
+Use validation mode to check data quality before running:
+```bash
+python aec_checker.py --infile members.csv --dry-run
+```
+
+This will report:
+-   Missing required fields
+-   Invalid postcodes
+-   Missing addresses
+-   Other data quality issues
+
+## New Features
+
+See `IMPROVEMENTS.md` for detailed documentation of recent enhancements:
+-   Retry logic with exponential backoff
+-   Configurable rate limiting
+-   Input validation and dry-run mode
+-   Enhanced result extraction (actual electoral divisions)
+-   Browser crash recovery
+-   CAPTCHA detection
+-   Improved logging and error handling
 
 ## Project Structure
 
 -   `aec_checker.py`: Entry point for the checker.
--   `convert_addresses.py`: Utility for address normalization.
--   `src/aec_core/`: Core logic package.
-    -   `browser.py`: Selenium automation logic.
-    -   `models.py`: Data models and constants.
-    -   `utils.py`: Helper functions.
+-   `src/`: Source code.
+    -   `aec_core/`: Core logic package.
+        -   `browser.py`: Selenium automation logic.
+        -   `models.py`: Data models and constants.
+        -   `utils.py`: Helper functions.
+    -   `utils/`: Utility scripts.
+        -   `convert_addresses.py`: Address normalization logic.

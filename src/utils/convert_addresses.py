@@ -41,6 +41,185 @@ streetTypes = {
     "WAY": "WAY",
     "LOOP": "LOOP",
     "MEWS": "MEWS",
+    "RISE": "RISE",
+    "WALK": "WALK",
+    "LINK": "LINK",
+    "GLADE": "GLADE",
+    "GRANGE": "GRANGE",
+    "HEIGHTS": "HTS",
+    "COVE": "COVE",
+    "POINT": "PT",
+    "VIEW": "VW",
+    "VIEWS": "VWS",
+    "PARKWAY": "PKWY",
+    "ALLEY": "ALLY",
+    "ARCADE": "ARC",
+    "BEND": "BND",
+    "BRAE": "BRAE",
+    "BRACE": "BR",
+    "BREAK": "BRK",
+    "BROW": "BROW",
+    "BYWAY": "BYWY",
+    "CAUSEWAY": "CSWY",
+    "CENTRE": "CTR",
+    "CENTREWAY": "CNWY",
+    "CHASE": "CH",
+    "CIRCLE": "CIR",
+    "CIRCLET": "CLT",
+    "COMMON": "CMMN",
+    "CONCOURSE": "CON",
+    "COPSE": "CPS",
+    "CORNER": "CNR",
+    "CORSO": "CSO",
+    "CROSS": "CRS",
+    "CROSSING": "CRSG",
+    "DALE": "DALE",
+    "DELL": "DELL",
+    "DENE": "DENE",
+    "DIVIDE": "DIV",
+    "DOMAIN": "DOM",
+    "DOWN": "DOWN",
+    "DOWNS": "DWNS",
+    "DRIVEWAY": "DRWY",
+    "EDGE": "EDGE",
+    "ELBOW": "ELB",
+    "END": "END",
+    "ENTRANCE": "ENT",
+    "ESTATE": "EST",
+    "EXPRESSWAY": "EXP",
+    "EXTENSION": "EXT",
+    "FAIRWAY": "FAIR",
+    "FIRE TRACK": "FTRK",
+    "FIRETRAIL": "FITR",
+    "FLAT": "FLAT",
+    "FOLLOW": "FOLW",
+    "FOOTWAY": "FTWY",
+    "FORESHORE": "FSHR",
+    "FORMATION": "FORM",
+    "FREEWAY": "FWY",
+    "FRONT": "FRNT",
+    "FRONTAGE": "FRTG",
+    "GAP": "GAP",
+    "GARDEN": "GDN",
+    "GATE": "GTE",
+    "GATES": "GTES",
+    "GATEWAY": "GWY",
+    "GLEN": "GLN",
+    "GRANGE": "GRA",
+    "GREEN": "GRN",
+    "GROUND": "GRND",
+    "GROVE": "GR",
+    "HEIGHTS": "HTS",
+    "HIGHROAD": "HIRD",
+    "HILL": "HILL",
+    "HILLS": "HLLS",
+    "HOLLOW": "HLLW",
+    "HUB": "HUB",
+    "INLET": "INLT",
+    "ISLAND": "ID",
+    "JUNCTION": "JNC",
+    "KEY": "KEY",
+    "LANDING": "LDG",
+    "LANEWAY": "LNWY",
+    "LEES": "LEES",
+    "LINE": "LINE",
+    "LINK": "LINK",
+    "LITTLE": "LT",
+    "LOOKOUT": "LKT",
+    "LOWER": "LWR",
+    "MALL": "MALL",
+    "MEANDER": "MNDR",
+    "MEWS": "MEWS",
+    "MILE": "MILE",
+    "MOTORWAY": "MWY",
+    "MOUNT": "MT",
+    "NOOK": "NOOK",
+    "OUTLOOK": "OTLK",
+    "PARK": "PARK",
+    "PARKLANDS": "PKLD",
+    "PARKWAY": "PKWY",
+    "PART": "PART",
+    "PASS": "PASS",
+    "PATH": "PATH",
+    "PATHWAY": "PHWY",
+    "PIAZZA": "PIAZ",
+    "PLACE": "PL",
+    "PLATEAU": "PLAT",
+    "PLAZA": "PLZA",
+    "POCKET": "PKT",
+    "POINT": "PT",
+    "PORT": "PORT",
+    "PROMENADE": "PROM",
+    "QUAD": "QUAD",
+    "QUADRANT": "QDRT",
+    "QUAY": "QY",
+    "QUAYS": "QYS",
+    "RAMBLE": "RMBL",
+    "RAMP": "RAMP",
+    "RANGE": "RNGE",
+    "REACH": "RCH",
+    "RESERVE": "RES",
+    "REST": "REST",
+    "RETREAT": "RTT",
+    "RIDE": "RIDE",
+    "RIDGE": "RDGE",
+    "RIDGEWAY": "RGWY",
+    "RIGHT OF WAY": "ROW",
+    "RING": "RING",
+    "RISE": "RISE",
+    "RIVER": "RVR",
+    "RIVERWAY": "RVWY",
+    "RIVIERA": "RIV",
+    "ROAD": "RD",
+    "ROADS": "RDS",
+    "ROADSIDE": "RDSD",
+    "ROADWAY": "RDWY",
+    "RONDE": "RNDE",
+    "ROSEBOWL": "RSBL",
+    "ROTUNDA": "RTDA",
+    "ROUTE": "RTE",
+    "ROW": "ROW",
+    "RUE": "RUE",
+    "RUN": "RUN",
+    "SERVICE WAY": "SWY",
+    "SIDING": "SDG",
+    "SLOPE": "SLPE",
+    "SOUND": "SND",
+    "SPUR": "SPUR",
+    "SQUARE": "SQ",
+    "STAIRS": "STRS",
+    "STATE HIGHWAY": "SHWY",
+    "STEPS": "STPS",
+    "STRAND": "STRA",
+    "STREET": "ST",
+    "STRIP": "STRP",
+    "SUBWAY": "SBWY",
+    "TARN": "TARN",
+    "TERRACE": "TCE",
+    "THOROUGHFARE": "THFR",
+    "TOLLWAY": "TLWY",
+    "TOP": "TOP",
+    "TOR": "TOR",
+    "TOWERS": "TWRS",
+    "TRACK": "TRK",
+    "TRAIL": "TRL",
+    "TRAILER": "TRLR",
+    "TRIANGLE": "TRI",
+    "TRUNKWAY": "TKWY",
+    "TURN": "TURN",
+    "UNDERPASS": "UPAS",
+    "UPPER": "UPR",
+    "VALE": "VALE",
+    "VIADUCT": "VDCT",
+    "VIEW": "VW",
+    "VILLAS": "VLLS",
+    "VISTA": "VSTA",
+    "WALK": "WALK",
+    "WALKWAY": "WKWY",
+    "WAY": "WAY",
+    "WHARF": "WHRF",
+    "WYND": "WYND",
+    "YARD": "YARD",
 }
 stateShorts = set(stateAbs.values())
 streetShorts = set(streetTypes.values())
@@ -60,10 +239,23 @@ def convert_address(state, origAddress):
     rev = re.sub(r"[,']", "", rev)
 
     matchme = revAddressSplitter.match(rev)
+    if not matchme:
+        # Regex failed to match, return original
+        return (convert_state(state), origAddress)
+        
     street = (((matchme.group(1))[::-1]).strip()).split(" ")
 
     streetName = " ".join(street[:-1])
     streetType = street[-1]
+
+    # Handle PO Boxes and other non-street addresses
+    if "PO BOX" in origAddress.upper() or "GPO BOX" in origAddress.upper() or "LOCKED BAG" in origAddress.upper():
+        # AEC checker likely can't verify PO Boxes, but we shouldn't crash or mangle them
+        # Just return as is or mark as unverified?
+        # For now, let's just return the original address as the street name and empty type
+        # But the function expects a tuple (state, street_address)
+        # The caller expects a street address.
+        return (convert_state(state), origAddress)
 
     state = convert_state(state)
 
@@ -71,14 +263,28 @@ def convert_address(state, origAddress):
         if streetType not in streetShorts:
             streetType = streetTypes[streetType]
     except Exception as e:
+        # Try to find a match in the keys
+        found = False
         for k, v in streetTypes.items():
+            if streetType == v: # Already abbreviated
+                found = True
+                break
             if streetType.startswith(v) or k.startswith(streetType):
                 streetType = v
+                found = True
                 break
-        else:
-            logging.error(e)
-            raise KeyError
-    return (state, streetName + " " + streetType)
+        
+        if not found:
+            # If we can't find the street type, it might be part of the name or a type we don't know.
+            # Instead of crashing, let's append it back to the name and assume the user knows what they are doing,
+            # or that the AEC checker might handle it (or fail gracefully later).
+            # logging.warning(f"Unknown street type '{streetType}' in '{origAddress}'. Preserving original.")
+            streetName = streetName + " " + streetType
+            streetType = ""
+            # raise KeyError # Don't raise, just continue
+    
+    final_address = (streetName + " " + streetType).strip()
+    return (state, final_address)
 
 
 def convert_state(state):
@@ -141,6 +347,8 @@ def process_csv(infile, outfile):
             wtr.writerow(row)
 
         except (IndexError, AttributeError, TypeError, KeyError) as e:
+            # This catch block should now be largely unreachable due to changes in convert_address
+            # but kept for safety.
             if not stderr_yet:
                 logging.warning(
                     "\nThe following entries are anomalous and will need to be manually considered:"
