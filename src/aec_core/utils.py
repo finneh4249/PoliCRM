@@ -2,7 +2,12 @@ from typing import Dict, Optional, Tuple
 
 
 def get_given_names(membership_row: Dict[str, Optional[str]]):
-    return (membership_row["first_name"] + " " + membership_row["middle_name"]).strip()
+    first = membership_row.get("first_name", "")
+    middle = membership_row.get("middle_name")
+    
+    if middle:
+        return f"{first} {middle}".strip()
+    return first.strip()
 
 
 def get_address_components(

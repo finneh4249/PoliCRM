@@ -9,6 +9,7 @@ class AECResult(Enum):
     FAIL_NO_MATCH = "Fail_No_Match"
     FAIL_STREET = "Fail_Street"
     FAIL_SUBURB = "Fail_Suburb"
+    CAPTCHA = "Captcha"
 
 
 AECStatus = collections.namedtuple(

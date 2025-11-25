@@ -44,6 +44,22 @@ This will guide you through:
 5.  Running the AEC verification with progress tracking.
 6.  Creating filtered output files based on results.
 
+### Web CRM (Fusion Pilot)
+
+For a full graphical interface with member management, dashboard, and bulk tools:
+
+```bash
+./run_crm.sh
+```
+
+This will start the web server and open the dashboard at `http://localhost:8000`.
+
+**Features:**
+-   **Dashboard**: Real-time stats on verification progress.
+-   **Member Management**: Add, edit, tag, and annotate members.
+-   **Import**: Drag-and-drop CSV import with auto-verification.
+-   **AEC Verification**: Automated background checks.
+
 ### Command Line Interface
 
 You can run the tools with command-line arguments for automation:

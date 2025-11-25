@@ -30,9 +30,20 @@ VERIFY_BUTTON_ID = "buttonVerify"
 
 # Configuration for retry and rate limiting
 MAX_RETRIES = 3
-BASE_RETRY_DELAY = 2  # seconds
-RATE_LIMIT_DELAY = (1.5, 3.0)  # Random delay range between requests
-REQUEST_TIMEOUT = 15  # seconds
+BASE_RETRY_DELAY = 3  # seconds (increased from 2)
+RATE_LIMIT_DELAY = (12.0, 20.0)  # Random delay range between requests (increased from 8-15)
+REQUEST_TIMEOUT = 20  # seconds (increased from 15)
+HUMAN_DELAY = (0.3, 0.8)  # Delay between typing/actions to appear more human
+
+# List of modern user agents to rotate
+USER_AGENTS = [
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/115.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0"
+]
 
 # Bypass SSL certificate verification to fix the URLError on macOS.
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -47,17 +58,39 @@ def get_driver(executable_path=None, headless=False):
     if headless:
         options.add_argument("--headless")
     
-    # Add options to reduce detection as bot
+    # Enable Private Browsing
+    options.add_argument("-private")
+    
+    # Enhanced bot detection evasion
     options.set_preference("dom.webdriver.enabled", False)
     options.set_preference("useAutomationExtension", False)
+    options.set_preference("marionette.enabled", True)
+    
+    # Disable automation flags
+    options.set_preference("privacy.trackingprotection.enabled", False)
+    options.set_preference("dom.webnotifications.enabled", False)
     
     # Set a realistic user agent
-    options.set_preference("general.useragent.override", 
-                          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+    user_agent = random.choice(USER_AGENTS)
+    options.set_preference("general.useragent.override", user_agent)
+    
+    # Additional privacy settings to appear more human
+    options.set_preference("media.peerconnection.enabled", False)  # Disable WebRTC
+    options.set_preference("geo.enabled", False)  # Disable geolocation
     
     driver = webdriver.Firefox(service=service, options=options)
+    
     # Set page load timeout
     driver.set_page_load_timeout(30)
+    
+    # Execute CDP commands to hide automation
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    
+    # Randomize window size
+    width = random.randint(1024, 1920)
+    height = random.randint(768, 1080)
+    driver.set_window_size(width, height)
+    
     return driver
 
 
@@ -68,27 +101,42 @@ def extract_electoral_info(page_source: str) -> Tuple[str, str, str, str]:
     local_gov = ""
     local_ward = ""
     
-    # Try to extract federal division
-    fed_match = re.search(r'Federal Division[:\s]*([A-Za-z\s]+)', page_source)
+    # Extract federal division - matches text or link content after "Federal Division:"
+    # Example: <a href="...">HAWKE</a> or <label>HAWKE</label>
+    fed_match = re.search(r'Federal Division:?</.*?>\s*</td>\s*<td>\s*(?:<a[^>]*>)?([A-Z\s]+)(?:</a>)?', page_source, re.IGNORECASE | re.DOTALL)
     if fed_match:
         federal_division = fed_match.group(1).strip()
     
-    # Try to extract state district
-    state_match = re.search(r'State District[:\s]*([A-Za-z\s]+)', page_source)
+    # Extract state district - matches label content after "State District:"
+    state_match = re.search(r'State District:?</.*?>\s*</td>\s*<td>\s*<label[^>]*>([A-Z\s]+)</label>', page_source, re.IGNORECASE | re.DOTALL)
     if state_match:
         state_district = state_match.group(1).strip()
     
-    # Try to extract local government
-    lg_match = re.search(r'Local Government Area[:\s]*([A-Za-z\s]+)', page_source)
+    # Extract local government - matches label content after "Local Government Area:"
+    lg_match = re.search(r'Local Government Area:?</.*?>\s*</td>\s*<td>\s*<label[^>]*>([A-Z\s]+)</label>', page_source, re.IGNORECASE | re.DOTALL)
     if lg_match:
         local_gov = lg_match.group(1).strip()
     
-    # Try to extract local ward
-    ward_match = re.search(r'Local Ward[:\s]*([A-Za-z\s]+)', page_source)
+    # Extract local ward - matches label content after "Local Ward:"
+    ward_match = re.search(r'Local Ward:?</.*?>\s*</td>\s*<td>\s*<label[^>]*>([A-Z\s]+)</label>', page_source, re.IGNORECASE | re.DOTALL)
     if ward_match:
         local_ward = ward_match.group(1).strip()
     
     return federal_division, state_district, local_gov, local_ward
+
+
+def human_type(element, text):
+    """Type text into an element with human-like delays between keystrokes."""
+    element.clear()
+    for char in text:
+        element.send_keys(char)
+        time.sleep(random.uniform(HUMAN_DELAY[0], HUMAN_DELAY[1]) / len(text))  # Variable typing speed
+
+
+def human_click(element):
+    """Click an element with a small random delay to simulate human behavior."""
+    time.sleep(random.uniform(HUMAN_DELAY[0], HUMAN_DELAY[1]))
+    element.click()
 
 
 def validate_membership_data(membership_row: Dict[str, Optional[str]]) -> Tuple[bool, str]:
@@ -148,24 +196,23 @@ def getAECStatus(
 
     for attempt in range(max_retries):
         try:
-            # Fill Name
+            # Fill Name with human-like typing
             wait = WebDriverWait(driver, REQUEST_TIMEOUT)
             
             given_name_field = wait.until(EC.presence_of_element_located((By.ID, GIVEN_NAME_ID)))
-            given_name_field.clear()
-            given_name_field.send_keys(given_names)
+            human_type(given_name_field, given_names)
+            time.sleep(random.uniform(0.5, 1.0))  # Pause between fields
 
             surname_field = driver.find_element(By.ID, SURNAME_ID)
-            surname_field.clear()
-            surname_field.send_keys(membership_row["last_name"])
+            human_type(surname_field, membership_row["last_name"])
+            time.sleep(random.uniform(0.5, 1.0))
 
-            # Fill Postcode
+            # Fill Postcode with human-like typing
             postcode_field = driver.find_element(By.ID, POSTCODE_ID)
-            postcode_field.clear()
-            postcode_field.send_keys(postcode)
+            human_type(postcode_field, postcode)
 
             # Wait for suburb dropdown to populate (triggered by postcode input)
-            time.sleep(1.5)
+            time.sleep(2.0)  # Increased wait time
 
             # Select Suburb
             suburb_state = f"{str.upper(suburb)} ({state})"
@@ -177,12 +224,14 @@ def getAECStatus(
             try:
                 suburb_select.select_by_value(suburb_state)
                 found_suburb = True
+                time.sleep(random.uniform(0.5, 1.0))  # Pause after selection
             except Exception:
                 # Try visible text match
                 for option in suburb_select.options:
                     if suburb_state in option.text.upper():
                         suburb_select.select_by_visible_text(option.text)
                         found_suburb = True
+                        time.sleep(random.uniform(0.5, 1.0))
                         break
 
             if not found_suburb:
@@ -195,7 +244,7 @@ def getAECStatus(
                 return AECStatus(AECResult.FAIL_SUBURB, "", "", "", "")
 
             # Wait for street dropdown to populate (triggered by suburb selection)
-            time.sleep(1.5)
+            time.sleep(2.0)  # Increased wait time
 
             # Select Street
             # The street dropdown is a Select2 widget with autocomplete.
@@ -207,20 +256,21 @@ def getAECStatus(
                 container_span = wait.until(EC.element_to_be_clickable(selection_selector))
                 # Scroll into view to ensure it's not covered
                 driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", container_span)
-                time.sleep(0.5)
-                container_span.click()
+                time.sleep(random.uniform(0.5, 1.0))  # Human-like delay before clicking
+                human_click(container_span)
                 
                 # Wait for search box
                 search_box = wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "select2-search__field")))
-                search_box.send_keys(street)
+                human_type(search_box, street)
                 
                 # Wait for results. The results are in a UL with id="select2-textStreetName-results"
                 results_id = f"select2-{STREET_ID}-results"
                 wait.until(EC.presence_of_element_located((By.ID, results_id)))
+                time.sleep(random.uniform(0.3, 0.7))  # Wait for results to render
                 
                 # Find the highlighted option and click it to ensure selection
                 highlighted_option = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".select2-results__option--highlighted")))
-                highlighted_option.click()
+                human_click(highlighted_option)
                 
                 # Wait for the dropdown to close
                 wait.until(EC.invisibility_of_element_located((By.ID, results_id)))
@@ -234,15 +284,17 @@ def getAECStatus(
                     continue
                 return AECStatus(AECResult.FAIL_STREET, "", "", "", "")
 
-            # Click Verify
-            # Use JavaScript click to avoid interception by any lingering overlays
+            # Click Verify with human-like behavior
+            # Add a pause to simulate reading the form before clicking
+            time.sleep(random.uniform(1.0, 2.0))
+            
             verify_btn = wait.until(EC.element_to_be_clickable((By.ID, VERIFY_BUTTON_ID)))
             driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", verify_btn)
-            time.sleep(0.5)
-            driver.execute_script("arguments[0].click();", verify_btn)
+            time.sleep(random.uniform(0.5, 1.0))
+            human_click(verify_btn)
 
             # Wait for result page to load
-            time.sleep(3)
+            time.sleep(random.uniform(3.0, 4.0))  # Variable wait time
 
             # Check for success
             page_source = driver.page_source
@@ -270,7 +322,7 @@ def getAECStatus(
                 return AECStatus(AECResult.FAIL_NO_MATCH, "", "", "", "")
             
             elif "captcha" in page_source.lower() or "verify you are human" in page_source.lower():
-                logging.error(f"CAPTCHA detected - may need manual intervention or longer delays")
+                logging.error(f"CAPTCHA detected - Private Browsing may need restart")
                 if attempt < max_retries - 1:
                     # Wait longer before retrying after CAPTCHA
                     retry_delay = BASE_RETRY_DELAY * (2 ** attempt)  # Exponential backoff
@@ -279,7 +331,7 @@ def getAECStatus(
                     driver.get("https://check.aec.gov.au/")
                     continue
                 driver.get("https://check.aec.gov.au/")
-                return AECStatus(AECResult.FAIL, "", "", "", "")
+                return AECStatus(AECResult.CAPTCHA, "", "", "", "")
             
             else:
                 # Unknown failure - might be form validation error

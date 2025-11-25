@@ -1,0 +1,113 @@
+<div class="fixed inset-y-0 left-0 w-64 gradient-bg text-white shadow-2xl z-40 flex flex-col">
+    <!-- Logo/Brand -->
+    <div class="p-6 border-b border-white/20">
+        <h1 class="text-2xl font-bold">🗳️ Party CRM</h1>
+        <p class="text-indigo-200 text-xs mt-1">Electoral Verification System</p>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <a href="#" onclick="setActiveView('dashboard'); return false;" id="nav-dashboard"
+            class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">📊</span>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" onclick="setActiveView('members'); return false;" id="nav-members"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">👥</span>
+            <span>All Members</span>
+        </a>
+        <a href="#" onclick="setActiveView('verified'); return false;" id="nav-verified"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">✅</span>
+            <span>Verified</span>
+            <span class="ml-auto bg-green-500 text-white text-xs px-2 py-0.5 rounded-full"
+                id="sidebar-verified-count">0</span>
+        </a>
+        <a href="#" onclick="setActiveView('pending'); return false;" id="nav-pending"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">⏳</span>
+            <span>Pending Check</span>
+            <span class="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full"
+                id="sidebar-pending-count">0</span>
+        </a>
+        <a href="#" onclick="setActiveView('failed'); return false;" id="nav-failed"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">❌</span>
+            <span>Failed Checks</span>
+            <span class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full"
+                id="sidebar-failed-count">0</span>
+        </a>
+        <a href="#" onclick="setActiveView('captcha'); return false;" id="nav-captcha"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">🔄</span>
+            <span>Captcha Issues</span>
+            <span class="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full"
+                id="sidebar-captcha-count">0</span>
+        </a>
+
+        <div class="border-t border-white/20 my-4"></div>
+
+        <a href="#" onclick="openTagManager(); return false;"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">🏷️</span>
+            <span>Manage Tags</span>
+        </a>
+        <a href="#" onclick="openReports(); return false;"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">📊</span>
+            <span>Reports</span>
+        </a>
+        <a href="#" onclick="document.getElementById('importModal').classList.remove('hidden'); return false;"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">📁</span>
+            <span>Import CSV</span>
+        </a>
+        <a href="#" onclick="exportAll(); return false;"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">📥</span>
+            <span>Export Data</span>
+        </a>
+
+        <div class="border-t border-white/20 my-4"></div>
+
+        <!-- User Management (Hidden by default, shown for admins) -->
+        <a href="#" onclick="openUserManagement(); return false;" id="userManagementBtn"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hidden">
+            <span class="text-lg">⚙️</span>
+            <span>User Management</span>
+        </a>
+
+        <!-- User Info -->
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-white" id="currentUserEmail">Loading...</p>
+                    <p class="text-xs text-indigo-200" id="currentUserRole"></p>
+                </div>
+                <button onclick="logout()" class="text-indigo-200 hover:text-white" title="Logout">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Footer Stats -->
+    <div class="p-4 border-t border-white/20 bg-white/10">
+        <div class="text-xs text-indigo-200 mb-2">Quick Stats</div>
+        <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="bg-white/10 rounded-lg p-2">
+                <div class="text-2xl font-bold" id="sidebar-total">0</div>
+                <div class="text-xs text-indigo-200">Total</div>
+            </div>
+            <div class="bg-white/10 rounded-lg p-2">
+                <div class="text-2xl font-bold text-green-300" id="sidebar-rate">0%</div>
+                <div class="text-xs text-indigo-200">Verified</div>
+            </div>
+        </div>
+    </div>
+</div>

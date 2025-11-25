@@ -1,0 +1,13 @@
+<div id="reportsModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto animate-fade-in">
+        <div class="gradient-bg text-white px-6 py-4 flex justify-between items-center rounded-t-2xl">
+            <h2 class="text-2xl font-bold">📊 Reports & Analytics</h2>
+            <button onclick="document.getElementById('reportsModal').classList.add('hidden')"
+                class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+
+        <div class="p-6 space-y-6" id="reportsContent">
+            <!-- Reports content populated by JS -->
+        </div>
+    </div>
+</div>
