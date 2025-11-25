@@ -4,6 +4,7 @@ import csv
 import re
 import argparse
 import sys
+import logging
 
 #                               cruft       name    whatever
 revAddressSplitter = re.compile(r"^[^A-Z]*([A-Z \-]+)( .+)?$")
@@ -75,19 +76,87 @@ def convert_address(state, origAddress):
                 streetType = v
                 break
         else:
-            print(e, file=sys.stderr)
+            logging.error(e)
             raise KeyError
     return (state, streetName + " " + streetType)
 
 
 def convert_state(state):
     """Normalises states to abbreviation"""
+    state_upper = state.upper().strip()
+    if state_upper in stateShorts:
+        return state_upper
     if len(state) > 3 or state not in stateShorts:
-        state = stateAbs[state.upper().strip()]
+        state = stateAbs[state_upper]
     return state
 
 
+def process_csv(infile, outfile):
+    rdr = csv.DictReader(infile)
+    fieldnames = rdr.fieldnames + ["origAddress"]
+    wtr = csv.DictWriter(outfile, fieldnames=fieldnames)
+    wtr.writeheader()
+
+    stderr_yet = False
+
+    for row in rdr:
+        # Try to find the address and state from available columns
+        raw_address = row.get("primary_address1")
+        if not raw_address:
+            raw_address = row.get("registered_address1")
+            # If registered_address1 is also empty, try registered_street_name etc?
+            # For now, stick to these two.
+
+        raw_state = row.get("primary_state")
+        if not raw_state:
+            raw_state = row.get("registered_state")
+        if not raw_state:
+            raw_state = row.get("address_state")
+        if not raw_state:
+            raw_state = row.get("mailing_state")
+
+        if not raw_address:
+            # No address found, write as is
+            wtr.writerow(row)
+            continue
+
+        og = raw_address
+        try:
+            # Ensure we have a string for state
+            state_input = raw_state if raw_state else ""
+            (state, streetName) = convert_address(state_input, raw_address)
+
+            # Update the row with the cleaned data
+            # We update primary_* fields so aec_checker can use them
+            row["primary_address1"] = streetName
+            row["primary_state"] = state
+
+            # Fill in other primary fields if missing, from registered
+            if not row.get("primary_city") and row.get("registered_city"):
+                row["primary_city"] = row.get("registered_city")
+            if not row.get("primary_zip") and row.get("registered_zip"):
+                row["primary_zip"] = row.get("registered_zip")
+
+            row["origAddress"] = og
+            wtr.writerow(row)
+
+        except (IndexError, AttributeError, TypeError, KeyError) as e:
+            if not stderr_yet:
+                logging.warning(
+                    "\nThe following entries are anomalous and will need to be manually considered:"
+                    "\n%s",
+                    e,
+                )
+                stderr_yet = True
+
+            logging.warning(f"Failed to convert: {og} ({e})")
+            row["origAddress"] = og
+            wtr.writerow(row)
+            continue
+
+
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stderr)
     parser = argparse.ArgumentParser(
         description="Try and fix street names in addresses for aec_checker.py"
     )
@@ -99,40 +168,7 @@ def main():
     )
     args = parser.parse_args()
 
-    rdr = csv.DictReader(args.infile)
-    wtr = csv.writer(args.outfile, rdr.fieldnames + ["origAddress"])
-    wtr.writerow(rdr.fieldnames + ["origAddress"])
-
-    stderr_yet = False
-
-    for row in rdr:
-        og = row["streetName"]
-        try:
-            (state, streetName) = convert_address(row["state"], row["streetName"])
-            wtr.writerow(
-                [
-                    row["givenNames"],
-                    row["surname"],
-                    row["postcode"],
-                    row["suburb"],
-                    state,
-                    streetName,
-                    og,
-                ]
-            )
-
-        except (IndexError, AttributeError, TypeError, KeyError) as e:
-            if not stderr_yet:
-                print(
-                    "\nThe following entries are anomalous and will need to be manually considered:\n",
-                    e,
-                    file=sys.stderr,
-                )
-                print(*(rdr.fieldnames), sep="\t", file=sys.stderr)
-                stderr_yet = True
-            rv = list(row.values())[:-1]
-            print(*rv, file=sys.stderr, sep="\t")
-            continue
+    process_csv(args.infile, args.outfile)
 
 
 if __name__ == "__main__":

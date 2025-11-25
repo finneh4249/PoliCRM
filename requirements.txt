@@ -1,3 +1,7 @@
 selenium>=4,<5
 # https://github.com/SergeyPirogov/webdriver_manager
 webdriver-manager
+black
+flake8
+rich
+questionary
