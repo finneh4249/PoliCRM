@@ -146,6 +146,11 @@ export const analyticsApi = {
     getElectorateBreakdown: () => apiCall<any>('/analytics/electorate-breakdown')
 };
 
+// System API
+export const systemApi = {
+    getQueueStatus: () => apiCall<any>('/system/queue')
+};
+
 // Import/Export API
 export const importApi = {
     uploadCSV: async (file: File, mappings: any) => {

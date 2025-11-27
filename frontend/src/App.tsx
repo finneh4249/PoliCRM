@@ -10,6 +10,7 @@ const LandingPage = lazy(() => import('./components/LandingPage').then(module =>
 const WarRoom = lazy(() => import('./pages/WarRoom').then(module => ({ default: module.WarRoom })))
 const Login = lazy(() => import('./pages/Login'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Queue = lazy(() => import('./pages/Queue'))
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             }>
               <Route path="/war-room" element={<WarRoom />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/queue" element={<Queue />} />
             </Route>
           </Routes>
         </Suspense>

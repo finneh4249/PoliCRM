@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class RateLimiter:
-    def __init__(self, max_per_hour=20, max_per_day=400):
+    def __init__(self, max_per_hour=100, max_per_day=2000):
         self.max_per_hour = max_per_hour
         self.max_per_day = max_per_day
         self.hour_window = deque()

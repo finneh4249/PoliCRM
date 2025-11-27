@@ -80,6 +80,16 @@ export function Sidebar() {
                     <span>War Room</span>
                 </NavLink>
 
+                <NavLink
+                    to="/queue"
+                    className={({ isActive }) =>
+                        `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-white/20 text-white' : 'text-indigo-100 hover:bg-white/10 hover:text-white'}`
+                    }
+                >
+                    <span className="text-lg">⚙️</span>
+                    <span>Background Queue</span>
+                </NavLink>
+
                 <div className="border-t border-white/20 my-4"></div>
 
                 <button

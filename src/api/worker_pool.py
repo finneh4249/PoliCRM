@@ -23,8 +23,10 @@ class BrowserPool:
         self.running = False
         self.running = False
         self.driver_lock = threading.Lock()
-        # Initialize rate limiter with conservative defaults (20/hr, 400/day)
-        self.rate_limiter = RateLimiter(max_per_hour=20, max_per_day=400)
+        # Initialize rate limiter (100/hr, 2000/day)
+        self.rate_limiter = RateLimiter(max_per_hour=100, max_per_day=2000)
+        self.queued_items = set()
+        self.worker_status = {}
 
     def start(self):
         """Start the worker threads."""
@@ -56,6 +58,10 @@ class BrowserPool:
 
     def enqueue_check(self, member_id: int):
         """Add a check job to the queue."""
+        if member_id in self.queued_items:
+            return
+            
+        self.queued_items.add(member_id)
         self.job_queue.put(member_id)
         logger.debug(f"Enqueued check for member {member_id}")
 
@@ -77,6 +83,7 @@ class BrowserPool:
                 self.drivers.append(driver)
         
         logger.info(f"Worker {worker_id} ready")
+        self.worker_status[worker_id] = {"status": "idle", "member_id": None, "member_name": None}
 
         while self.running:
             try:
@@ -99,6 +106,11 @@ class BrowserPool:
                     continue
 
                 logger.info(f"Worker {worker_id} checking member {member.first_name} {member.last_name}")
+                self.worker_status[worker_id] = {
+                    "status": "checking",
+                    "member_id": member.id,
+                    "member_name": f"{member.first_name} {member.last_name}"
+                }
 
                 # Prepare data for getAECStatus
                 # It expects a dict with specific keys
@@ -147,11 +159,13 @@ class BrowserPool:
                 db.add(result)
                 db.commit()
                 logger.info(f"Worker {worker_id} finished member {member_id}: {status.result}")
+                self.worker_status[worker_id] = {"status": "idle", "member_id": None, "member_name": None}
 
             except Exception as e:
                 logger.error(f"Worker {worker_id} error: {e}")
             finally:
                 db.close()
+                self.queued_items.discard(member_id)
                 self.job_queue.task_done()
         
         # Cleanup this worker's driver
@@ -160,3 +174,15 @@ class BrowserPool:
                 driver.quit()
             except:
                 pass
+        
+        if worker_id in self.worker_status:
+            del self.worker_status[worker_id]
+
+    def get_status(self):
+        """Get the current status of the pool."""
+        return {
+            "queue_size": self.job_queue.qsize(),
+            "queued_items": list(self.queued_items),
+            "workers": self.worker_status,
+            "pool_size": self.pool_size
+        }

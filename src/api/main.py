@@ -21,7 +21,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 from .database import engine, Base, SessionLocal
 from .models import User
 from .dependencies import browser_pool
-from .routers import members, tags, stats, users, views, integrations, analytics, searches
+from .routers import members, tags, stats, users, views, integrations, analytics, searches, system
 from .services import daemon
 
 # Create tables
@@ -50,6 +50,7 @@ app.include_router(stats.router, prefix="/stats", tags=["stats"])
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 app.include_router(searches.router, prefix="/searches", tags=["searches"])
+app.include_router(system.router, prefix="/system", tags=["system"])
 
 try:
     app.include_router(integrations.router, prefix="/integrations", tags=["integrations"])

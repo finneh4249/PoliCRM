@@ -27,6 +27,7 @@ export default defineConfig({
       '/stats': 'http://localhost:8000',
       '/users': 'http://localhost:8000',
       '/analytics': 'http://localhost:8000',
+      '/system': 'http://localhost:8000',
       '/static': 'http://localhost:8000',
     },
   },

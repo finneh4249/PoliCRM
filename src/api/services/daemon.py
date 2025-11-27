@@ -40,39 +40,35 @@ def auto_check_daemon():
                     except Exception as e:
                         logger.error(f"Failed to auto-queue member {member.id}: {e}")
             
-            # 2. Periodically retry failed and captcha members
-            if current_time - last_retry_check >= (retry_interval_minutes * 60):
-                logger.info("Auto-check daemon performing periodic retry of failed/captcha members")
-                
-                # Subquery to get the latest check result for each member
-                latest_checks = db.query(
-                    CheckResult.member_id,
-                    func.max(CheckResult.timestamp).label('max_timestamp')
-                ).group_by(CheckResult.member_id).subquery()
-                
-                # Get members whose latest check was Captcha, Fail, or Pass without electorate details
-                retry_results = db.query(CheckResult).join(
-                    latest_checks,
-                    (CheckResult.member_id == latest_checks.c.member_id) &
-                    (CheckResult.timestamp == latest_checks.c.max_timestamp)
-                ).filter(
-                    (CheckResult.result.in_(['Captcha', 'Fail', 'Fail_Suburb', 'Fail_Street', 'Fail_No_Match'])) |
-                    ((CheckResult.result == 'Pass') & ((CheckResult.federal_division == None) | (CheckResult.federal_division == '')))
-                ).all()
-                
-                if retry_results:
-                    logger.info(f"Auto-check daemon retrying {len(retry_results)} failed/captcha/incomplete members")
-                    for result in retry_results:
-                        try:
-                            member = db.query(Member).filter(Member.id == result.member_id).first()
-                            if member:
-                                browser_pool.enqueue_check(member.id)
-                                reason = "missing electorate data" if result.result == 'Pass' else result.result
-                                logger.info(f"Auto-queued retry for member {member.id} - reason: {reason}")
-                        except Exception as e:
-                            logger.error(f"Failed to auto-queue retry for member {result.member_id}: {e}")
-                
-                last_retry_check = current_time
+            # 2. Continuously retry failed, partial, and captcha members
+            # We rely on browser_pool.queued_items to prevent duplicate queuing
+            logger.debug("Auto-check daemon checking for failed/partial/captcha members to retry")
+            
+            # Subquery to get the latest check result for each member
+            latest_checks = db.query(
+                CheckResult.member_id,
+                func.max(CheckResult.timestamp).label('max_timestamp')
+            ).group_by(CheckResult.member_id).subquery()
+            
+            # Get members whose latest check was Captcha, Fail, Partial, or Pass without electorate details
+            retry_results = db.query(CheckResult).join(
+                latest_checks,
+                (CheckResult.member_id == latest_checks.c.member_id) &
+                (CheckResult.timestamp == latest_checks.c.max_timestamp)
+            ).filter(
+                (CheckResult.result.in_(['Captcha', 'Fail', 'Fail_Suburb', 'Fail_Street', 'Fail_No_Match', 'Partial'])) |
+                ((CheckResult.result == 'Pass') & ((CheckResult.federal_division == None) | (CheckResult.federal_division == '')))
+            ).all()
+            
+            if retry_results:
+                logger.info(f"Auto-check daemon found {len(retry_results)} members to retry")
+                for result in retry_results:
+                    try:
+                        member = db.query(Member).filter(Member.id == result.member_id).first()
+                        if member:
+                            browser_pool.enqueue_check(member.id)
+                    except Exception as e:
+                        logger.error(f"Failed to auto-queue retry for member {result.member_id}: {e}")
             
             db.close()
             time.sleep(30)

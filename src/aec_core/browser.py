@@ -1,4 +1,5 @@
 import time
+import os
 import logging
 import ssl
 import random
@@ -52,7 +53,13 @@ ssl._create_default_https_context = ssl._create_unverified_context
 def get_driver(executable_path=None, headless=False):
     """Create a Firefox WebDriver instance with appropriate options."""
     if executable_path is None:
-        executable_path = GeckoDriverManager().install()
+        # Check for local geckodriver first
+        local_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bin", "geckodriver")
+        if os.path.exists(local_path):
+            executable_path = local_path
+            logging.info(f"Using local geckodriver at {local_path}")
+        else:
+            executable_path = GeckoDriverManager().install()
     service = FirefoxService(executable_path)
     options = Options()
     if headless:

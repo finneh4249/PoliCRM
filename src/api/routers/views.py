@@ -27,3 +27,8 @@ async def dashboard():
 async def war_room():
     """Serve the React app (handles war-room route)"""
     return FileResponse(get_react_app_path())
+
+@router.get("/queue", response_class=FileResponse)
+async def queue_page():
+    """Serve the React app (handles queue route)"""
+    return FileResponse(get_react_app_path())
