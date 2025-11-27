@@ -1,17 +1,29 @@
-from fastapi import APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter
+from fastapi.responses import FileResponse
 import os
 
 router = APIRouter()
 
-# Setup templates
-templates = Jinja2Templates(directory=os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates"))
+# Get the path to the React build
+def get_react_app_path():
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "dist", "index.html")
 
-@router.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+@router.get("/", response_class=FileResponse)
+async def landing_page():
+    """Serve the React landing page"""
+    return FileResponse(get_react_app_path())
 
-@router.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+@router.get("/login", response_class=FileResponse)
+async def login_page():
+    """Serve the React app (handles login route)"""
+    return FileResponse(get_react_app_path())
+
+@router.get("/dashboard", response_class=FileResponse)
+async def dashboard():
+    """Serve the React app (handles dashboard route)"""
+    return FileResponse(get_react_app_path())
+
+@router.get("/war-room", response_class=FileResponse)
+async def war_room():
+    """Serve the React app (handles war-room route)"""
+    return FileResponse(get_react_app_path())

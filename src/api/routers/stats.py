@@ -17,10 +17,13 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_user: User = Depe
     
     verified = db.query(Member).join(CheckResult).filter(CheckResult.result == "Pass").distinct().count()
     failed = db.query(Member).join(CheckResult).filter(CheckResult.result.in_(["Fail", "Fail_Suburb", "Fail_Street", "Fail_No_Match"])).distinct().count()
+    partial = db.query(Member).join(CheckResult).filter(CheckResult.result == "Partial").distinct().count()
     captcha = db.query(Member).join(CheckResult).filter(CheckResult.result == "Captcha").distinct().count()
     
     checked_member_ids = db.query(CheckResult.member_id).distinct().subquery()
     unchecked = db.query(Member).filter(~Member.id.in_(checked_member_ids)).count()
+    
+    duplicate = db.query(Member).filter(Member.is_duplicate == True).count()
     
     state_distribution = db.query(Member.primary_state, func.count(Member.id)).group_by(Member.primary_state).all()
     
@@ -33,8 +36,10 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_user: User = Depe
         "lapsed_members": lapsed_members,
         "verified_count": verified,
         "failed_count": failed,
+        "partial_match_count": partial,
         "captcha_count": captcha,
         "unchecked_count": unchecked,
+        "duplicate_count": duplicate,
         "new_members_30d": new_members,
         "by_state": dict(state_distribution)
     }

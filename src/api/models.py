@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Boolean, Table
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from datetime import datetime
 from .database import Base
 from .security import EncryptedType
@@ -54,18 +54,22 @@ class Member(Base):
     join_date = Column(DateTime, nullable=True)
     renewal_date = Column(DateTime, nullable=True)
     membership_type = Column(String, nullable=True)  # e.g., full, supporter, associate
+    resignation_date = Column(DateTime, nullable=True)
     
     # System fields
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_duplicate = Column(Boolean, default=False)
     duplicate_of_id = Column(Integer, ForeignKey('members.id'), nullable=True)
+    last_synced_at = Column(DateTime, nullable=True)
+    party_id = Column(Integer, ForeignKey('parties.id'), nullable=True)
     
     # Relationships
     check_results = relationship("CheckResult", back_populates="member", cascade="all, delete-orphan")
     notes = relationship("MemberNote", back_populates="member", cascade="all, delete-orphan")
     tags = relationship("Tag", secondary=member_tags, back_populates="members")
     duplicate_of = relationship("Member", remote_side=[id], foreign_keys=[duplicate_of_id])
+    party = relationship("Party", back_populates="members")
 
 class CheckResult(Base):
     __tablename__ = "check_results"
@@ -107,3 +111,39 @@ class Tag(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     members = relationship("Member", secondary=member_tags, back_populates="tags")
+
+class Party(Base):
+    __tablename__ = "parties"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    type = Column(String) # Federal, State, Branch
+    parent_id = Column(Integer, ForeignKey('parties.id'), nullable=True)
+    
+    members = relationship("Member", back_populates="party")
+    children = relationship("Party", backref=backref("parent", remote_side=[id]))
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    action = Column(String) # LOGIN, EXPORT, MEMBER_UPDATE
+    target_type = Column(String) # MEMBER, SYSTEM
+    target_id = Column(Integer, nullable=True)
+    details = Column(Text) # JSON string
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    ip_address = Column(String, nullable=True)
+    
+    user = relationship("User")
+
+class SavedSearch(Base):
+    __tablename__ = "saved_searches"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    filters = Column(Text) # JSON string of filters
+    created_by = Column(Integer, ForeignKey('users.id'))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User")

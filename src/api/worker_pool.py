@@ -57,7 +57,7 @@ class BrowserPool:
     def enqueue_check(self, member_id: int):
         """Add a check job to the queue."""
         self.job_queue.put(member_id)
-        logger.info(f"Enqueued check for member {member_id}")
+        logger.debug(f"Enqueued check for member {member_id}")
 
     def _init_driver(self):
         """Initialize a single driver."""

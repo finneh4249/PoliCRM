@@ -1,7 +1,7 @@
 <div class="fixed inset-y-0 left-0 w-64 gradient-bg text-white shadow-2xl z-40 flex flex-col">
     <!-- Logo/Brand -->
     <div class="p-6 border-b border-white/20">
-        <h1 class="text-2xl font-bold">🗳️ Party CRM</h1>
+        <h1 class="text-2xl font-bold">🗳️ PoliCRM</h1>
         <p class="text-indigo-200 text-xs mt-1">Electoral Verification System</p>
     </div>
 
@@ -31,6 +31,13 @@
             <span class="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full"
                 id="sidebar-pending-count">0</span>
         </a>
+        <a href="#" onclick="setActiveView('partial'); return false;" id="nav-partial"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">⚠️</span>
+            <span>Partial Matches</span>
+            <span class="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full"
+                id="sidebar-partial-count">0</span>
+        </a>
         <a href="#" onclick="setActiveView('failed'); return false;" id="nav-failed"
             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
             <span class="text-lg">❌</span>
@@ -45,6 +52,13 @@
             <span class="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full"
                 id="sidebar-captcha-count">0</span>
         </a>
+        <a href="#" onclick="setActiveView('duplicates'); return false;" id="nav-duplicates"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">👯</span>
+            <span>Duplicates</span>
+            <span class="ml-auto bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full"
+                id="sidebar-duplicate-count">0</span>
+        </a>
 
         <div class="border-t border-white/20 my-4"></div>
 
@@ -57,6 +71,11 @@
             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
             <span class="text-lg">📊</span>
             <span>Reports</span>
+        </a>
+        <a href="#" onclick="checkForDuplicates(); return false;"
+            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">
+            <span class="text-lg">🔍</span>
+            <span>Detect Duplicates</span>
         </a>
         <a href="#" onclick="document.getElementById('importModal').classList.remove('hidden'); return false;"
             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium">

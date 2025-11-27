@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AEC CRM - Political Party Dashboard{% endblock %}</title>
+    <title>{% block title %}PoliCRM - Political Party Dashboard{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
@@ -29,16 +29,18 @@
     {% include "components/modals/import.html" %}
     {% include "components/modals/add_member.html" %}
     {% include "components/modals/user_management.html" %}
+    {% block modals %}{% endblock %}
 
     <!-- Toast Container -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3"></div>
 
     <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="/static/js/firebase-config.js"></script>
 
-    <script src="/static/js/app.js"></script>
+    <!-- App Logic -->
+    <script type="module" src="/static/js/app.js"></script>
     {% block scripts %}{% endblock %}
 </body>
 

@@ -36,7 +36,7 @@ def auto_check_daemon():
                 for member in unchecked_members:
                     try:
                         browser_pool.enqueue_check(member.id)
-                        logger.info(f"Auto-queued unchecked member {member.id}")
+                        logger.debug(f"Auto-queued unchecked member {member.id}")
                     except Exception as e:
                         logger.error(f"Failed to auto-queue member {member.id}: {e}")
             

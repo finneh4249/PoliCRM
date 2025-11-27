@@ -64,15 +64,26 @@ class MemberBase(BaseModel):
     membership_type: Optional[str] = None
     join_date: Optional[datetime] = None
     renewal_date: Optional[datetime] = None
+    resignation_date: Optional[datetime] = None
 
 class MemberCreate(MemberBase):
     pass
+
+class PartyBase(BaseModel):
+    name: str
+    type: str
+
+class PartyResponse(PartyBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
 
 class MemberUpdate(BaseModel):
     first_name: Optional[str] = None
     middle_name: Optional[str] = None
     last_name: Optional[str] = None
-    email: Optional[str] = None  # Changed from EmailStr to str to allow empty strings
+    email: Optional[str] = None
     phone: Optional[str] = None
     mobile: Optional[str] = None
     primary_address1: Optional[str] = None
@@ -82,6 +93,8 @@ class MemberUpdate(BaseModel):
     membership_status: Optional[str] = None
     membership_type: Optional[str] = None
     renewal_date: Optional[datetime] = None
+    resignation_date: Optional[datetime] = None
+    party_id: Optional[int] = None
 
 class MemberResponse(MemberBase):
     id: int
@@ -91,6 +104,7 @@ class MemberResponse(MemberBase):
     check_results: List[CheckResultBase] = []
     notes: List[MemberNoteResponse] = []
     tags: List[TagResponse] = []
+    party: Optional[PartyResponse] = None
 
     class Config:
         from_attributes = True

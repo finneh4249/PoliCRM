@@ -98,6 +98,24 @@
                 class="bg-slate-50 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2">
                 <span>📥</span> Export All
             </button>
+            <div class="relative group">
+                <button id="bulkActionsBtn"
+                    onclick="document.getElementById('bulkActionsDropdown').classList.toggle('hidden')"
+                    class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span>⚡</span> Bulk Actions
+                </button>
+                <div id="bulkActionsDropdown"
+                    class="hidden absolute top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-20">
+                    <button onclick="openBulkStatusModal()"
+                        class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg">Change
+                        Status</button>
+                    <!-- Add more bulk actions here -->
+                </div>
+            </div>
+            <button onclick="openAnnualReminders()"
+                class="bg-purple-50 text-purple-600 hover:bg-purple-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2">
+                <span>📅</span> Reminders
+            </button>
             <div class="flex-grow"></div>
             <span class="text-xs text-slate-500">Auto-refresh: <span id="refreshTimer">10s</span></span>
         </div>
@@ -120,26 +138,74 @@
                 </div>
             </div>
 
-            <div class="w-full lg:w-48">
+            <div class="w-full lg:w-48 relative">
                 <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2 block">Status</label>
-                <select id="statusFilter"
-                    class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                    <option value="all">All Statuses</option>
-                    <option value="Verified">✓ Verified</option>
-                    <option value="Partial">⚠ Partial Match</option>
-                    <option value="Captcha">🔄 Captcha</option>
-                    <option value="Fail_Suburb">✗ Suburb Not Found</option>
-                    <option value="Fail_Street">✗ Street Not Found</option>
-                    <option value="Fail_No_Match">✗ Not Enrolled</option>
-                    <option value="Fail">✗ Other Failures</option>
-                    <option value="Unchecked">⏳ Unchecked</option>
-                </select>
+                <button id="statusFilterBtn"
+                    onclick="document.getElementById('statusFilterDropdown').classList.toggle('hidden')"
+                    class="w-full text-left px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white flex justify-between items-center">
+                    <span id="statusFilterLabel" class="truncate text-sm">All Statuses</span>
+                    <span class="text-xs text-slate-400">▼</span>
+                </button>
+
+                <div id="statusFilterDropdown"
+                    class="hidden absolute top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-30">
+                    <!-- Presets -->
+                    <div class="mb-3 pb-3 border-b border-slate-100">
+                        <span class="text-xs font-bold text-slate-500 uppercase block mb-2">Presets</span>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="setStatusPreset('action_required')"
+                                class="px-2 py-1 text-xs bg-orange-50 text-orange-700 rounded border border-orange-100 hover:bg-orange-100">Action
+                                Required</button>
+                            <button onclick="setStatusPreset('safe')"
+                                class="px-2 py-1 text-xs bg-green-50 text-green-700 rounded border border-green-100 hover:bg-green-100">Safe</button>
+                        </div>
+                    </div>
+
+                    <!-- Checkboxes -->
+                    <div class="space-y-2 max-h-60 overflow-y-auto">
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="status-checkbox checkbox-custom" value="Verified"
+                                onchange="updateStatusFilterDisplay()">
+                            <span class="text-sm">✓ Verified</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="status-checkbox checkbox-custom" value="Partial"
+                                onchange="updateStatusFilterDisplay()">
+                            <span class="text-sm">⚠ Partial Match</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="status-checkbox checkbox-custom" value="Captcha"
+                                onchange="updateStatusFilterDisplay()">
+                            <span class="text-sm">🔄 Captcha</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="status-checkbox checkbox-custom" value="Fail"
+                                onchange="updateStatusFilterDisplay()">
+                            <span class="text-sm">✗ Failed</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="status-checkbox checkbox-custom" value="Unchecked"
+                                onchange="updateStatusFilterDisplay()">
+                            <span class="text-sm">⏳ Unchecked</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <input type="checkbox" class="status-checkbox checkbox-custom" value="Duplicate"
+                                onchange="updateStatusFilterDisplay()">
+                            <span class="text-sm">👯 Duplicate</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex justify-end">
+                        <button onclick="clearStatusFilters()"
+                            class="text-xs text-slate-500 hover:text-red-600">Clear</button>
+                    </div>
+                </div>
             </div>
 
             <div class="w-full lg:w-48">
                 <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2 block">State</label>
                 <select id="stateFilter"
-                    class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-sm text-slate-600 appearance-none cursor-pointer hover:border-indigo-300 transition-colors">
                     <option value="all">All States</option>
                     <option value="NSW">NSW</option>
                     <option value="VIC">VIC</option>
@@ -150,6 +216,42 @@
                     <option value="ACT">ACT</option>
                     <option value="NT">NT</option>
                 </select>
+
+                <!-- Tag Filter -->
+                <div class="relative group">
+                    <button id="tagFilterBtn"
+                        onclick="document.getElementById('tagFilterDropdown').classList.toggle('hidden')"
+                        class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-sm text-slate-600 hover:border-indigo-300 transition-colors flex items-center gap-2">
+                        <span class="absolute left-3 text-slate-400 text-lg">🏷️</span>
+                        <span>Tags</span>
+                        <span id="tagFilterCount"
+                            class="hidden bg-indigo-100 text-indigo-700 text-xs px-1.5 rounded-full">0</span>
+                    </button>
+
+                    <div id="tagFilterDropdown"
+                        class="hidden absolute top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-20">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-slate-500 uppercase">Filter by Tags</span>
+                            <div class="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
+                                <button onclick="setTagOperator('AND')" id="tagOpAND"
+                                    class="px-2 py-0.5 text-xs font-bold rounded bg-white shadow-sm text-indigo-600">AND</button>
+                                <button onclick="setTagOperator('OR')" id="tagOpOR"
+                                    class="px-2 py-0.5 text-xs font-bold rounded text-slate-500 hover:text-slate-700">OR</button>
+                            </div>
+                        </div>
+                        <div id="tagFilterList" class="space-y-2 max-h-48 overflow-y-auto mb-3">
+                            <!-- Tags injected here -->
+                            <p class="text-xs text-slate-400 italic">Loading tags...</p>
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="clearTagFilters()"
+                                class="text-xs text-slate-500 hover:text-red-600">Clear</button>
+                            <button onclick="openTagManager()"
+                                class="text-xs text-indigo-600 hover:text-indigo-800 font-medium ml-3">Manage
+                                Tags</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="flex items-end">
@@ -229,6 +331,337 @@
                     class="px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors">
                     Next →
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Export Wizard Modal -->
+<div id="exportWizardModal"
+    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="font-bold text-lg text-slate-800">Export Members</h3>
+            <button onclick="document.getElementById('exportWizardModal').classList.add('hidden')"
+                class="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-6 space-y-6">
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-sm font-medium text-slate-700">Select Columns</label>
+                    <button onclick="toggleAllExportColumns()"
+                        class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">Toggle All</button>
+                </div>
+                <div class="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
+                    <label
+                        class="flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
+                        <input type="checkbox" class="export-col checkbox-custom" value="full_name" checked>
+                        <span class="text-sm text-slate-600">Full Name</span>
+                    </label>
+                    <label
+                        class="flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
+                        <input type="checkbox" class="export-col checkbox-custom" value="email" checked>
+                        <span class="text-sm text-slate-600">Email</span>
+                    </label>
+                    <label
+                        class="flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
+                        <input type="checkbox" class="export-col checkbox-custom" value="phone" checked>
+                        <span class="text-sm text-slate-600">Phone</span>
+                    </label>
+                    <label
+                        class="flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
+                        <input type="checkbox" class="export-col checkbox-custom" value="address" checked>
+                        <span class="text-sm text-slate-600">Address</span>
+                    </label>
+                    <label
+                        class="flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
+                        <input type="checkbox" class="export-col checkbox-custom" value="status" checked>
+                        <span class="text-sm text-slate-600">Status</span>
+                    </label>
+                    <label
+                        class="flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
+                        <input type="checkbox" class="export-col checkbox-custom" value="party_member" checked>
+                        <span class="text-sm text-slate-600">Party Member</span>
+                    </label>
+                    <label
+                        class="flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
+                        <input type="checkbox" class="export-col checkbox-custom" value="notes">
+                        <span class="text-sm text-slate-600">Notes</span>
+                    </label>
+                    <label
+                        class="flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
+                        <input type="checkbox" class="export-col checkbox-custom" value="tags">
+                        <span class="text-sm text-slate-600">Tags</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-lg flex gap-3 items-start">
+                <svg class="w-5 h-5 text-blue-600 mt-0.5 shrink-0" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-sm text-blue-700">The export will include all members matching your current filters.
+                    Large exports may take a few moments to process.</p>
+            </div>
+        </div>
+
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+            <button onclick="document.getElementById('exportWizardModal').classList.add('hidden')"
+                class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium text-sm transition-colors">Cancel</button>
+            <button onclick="executeExport()"
+                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Export CSV
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tag Manager Modal -->
+<div id="tagManagerModal"
+    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+    <div
+        class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh]">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+            <h3 class="font-bold text-lg text-slate-800">Manage Tags</h3>
+            <button onclick="document.getElementById('tagManagerModal').classList.add('hidden')"
+                class="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto">
+            <div class="mb-8 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                <h4 class="text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">Create New Tag</h4>
+                <form id="createTagForm" onsubmit="event.preventDefault(); createTag();"
+                    class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Tag Name</label>
+                        <input type="text" id="tagName" required
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                            placeholder="e.g. Volunteer">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Color</label>
+                        <input type="color" id="tagColor" value="#6366f1"
+                            class="w-full h-[38px] p-1 bg-white border border-slate-300 rounded-lg cursor-pointer">
+                    </div>
+                    <button type="submit"
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                        Create
+                    </button>
+                    <div class="md:col-span-4">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Description (Optional)</label>
+                        <input type="text" id="tagDescription"
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                            placeholder="Brief description of what this tag represents">
+                    </div>
+                </form>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">Existing Tags</h4>
+                <div id="tagsContainer" class="space-y-2">
+                    <!-- Tags will be loaded here -->
+                    <div class="text-center py-8 text-slate-400">Loading tags...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Tag to Member Modal -->
+<div id="addTagToMemberModal"
+    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="font-bold text-lg text-slate-800">Add Tag</h3>
+            <button onclick="document.getElementById('addTagToMemberModal').classList.add('hidden')"
+                class="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-6">
+            <input type="hidden" id="addTagMemberId">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Select Tag</label>
+                <select id="tagSelect"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    <!-- Tags will be loaded here -->
+                </select>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('addTagToMemberModal').classList.add('hidden')"
+                    class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium text-sm transition-colors">Cancel</button>
+                <button onclick="submitAddTagToMember()"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow transition-all">Add
+                    Tag</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Reports Modal -->
+<div id="reportsModal"
+    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+    <div
+        class="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+            <h3 class="font-bold text-lg text-slate-800">Analytics & Reports</h3>
+            <button onclick="document.getElementById('reportsModal').classList.add('hidden')"
+                class="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto bg-slate-50/50 flex-grow">
+            <div id="reportsContent">
+                <!-- Dashboard stats will be loaded here -->
+                <div class="text-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p class="text-slate-500">Loading reports...</p>
+                </div>
+            </div>
+
+            <div id="electorateStats" class="mt-8">
+                <!-- Electorate stats will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Status Modal -->
+<div id="bulkStatusModal"
+    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="font-bold text-lg text-slate-800">Change Status</h3>
+            <button onclick="document.getElementById('bulkStatusModal').classList.add('hidden')"
+                class="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div class="p-6">
+            <p class="text-sm text-slate-600 mb-4">Update status for <span id="bulkStatusCount"
+                    class="font-bold">0</span> selected members.</p>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-2">New Status</label>
+                <select id="bulkStatusSelect"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    <option value="active">Active</option>
+                    <option value="lapsed">Lapsed</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="Resigned">Resigned</option>
+                    <option value="Archived">Archived</option>
+                </select>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('bulkStatusModal').classList.add('hidden')"
+                    class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium text-sm transition-colors">Cancel</button>
+                <button onclick="submitBulkStatusUpdate()"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow transition-all">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resign Member Confirmation Modal -->
+<div id="resignMemberModal"
+    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="px-6 py-4 border-b border-red-100 flex justify-between items-center bg-red-50">
+            <h3 class="font-bold text-lg text-red-800">Resign Member</h3>
+            <button onclick="document.getElementById('resignMemberModal').classList.add('hidden')"
+                class="text-red-400 hover:text-red-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div class="p-6">
+            <input type="hidden" id="resignMemberId">
+            <div class="flex items-start gap-4 mb-4">
+                <div class="bg-red-100 p-3 rounded-full shrink-0">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                        </path>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-1">Confirm Resignation</h4>
+                    <p class="text-sm text-slate-600">Are you sure you want to mark <span id="resignMemberName"
+                            class="font-bold"></span> as Resigned?</p>
+                    <p class="text-xs text-slate-500 mt-2 bg-slate-50 p-2 rounded border border-slate-100">
+                        ℹ️ This will start a <strong>30-day cooling-off period</strong>. After 30 days, the member will
+                        be automatically archived.
+                    </p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('resignMemberModal').classList.add('hidden')"
+                    class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium text-sm transition-colors">Cancel</button>
+                <button onclick="submitResignMember()"
+                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow transition-all">Confirm
+                    Resignation</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Annual Reminders Modal -->
+<div id="annualRemindersModal"
+    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+    <div
+        class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh]">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+            <h3 class="font-bold text-lg text-slate-800">Annual Membership Reminders</h3>
+            <button onclick="document.getElementById('annualRemindersModal').classList.add('hidden')"
+                class="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <p class="text-sm text-slate-600 mb-4">Members who joined in <span id="currentMonthName"
+                    class="font-bold"></span> and are due for an annual reminder.</p>
+            <div id="remindersList" class="space-y-2">
+                <div class="text-center py-8 text-slate-400">Loading...</div>
             </div>
         </div>
     </div>
