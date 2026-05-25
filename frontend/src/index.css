@@ -4,17 +4,16 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 40% 98%; /* Slate-50 (#f8fafc) */
+    --foreground: 222.2 47.4% 11.2%; /* Slate-900 (#0f172a) */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222.2 47.4% 11.2%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222.2 47.4% 11.2%;
 
-    --primary: 247 74% 65%;
-    /* Indigo 500 */
+    --primary: 221.2 83.2% 53.3%; /* Operations Blue (#3553eb) */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -31,7 +30,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 247 74% 65%;
+    --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.75rem;
   }
@@ -78,7 +77,6 @@
 }
 
 @layer utilities {
-
   /* Advanced Glassmorphism */
   .glass {
     @apply bg-white/10 backdrop-blur-lg border border-white/20;
@@ -98,24 +96,41 @@
 
   /* Gradient Utilities */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500;
+    @apply text-slate-900;
   }
 
   .text-gradient-cool {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600;
+    @apply text-slate-900;
   }
 
   .gradient-bg {
-    @apply bg-gradient-to-r from-indigo-600 to-purple-600;
+    @apply bg-slate-900 border-r border-slate-800;
   }
 
   .gradient-mesh {
-    background: radial-gradient(at 0% 0%, hsla(253, 77%, 66%, 0.4) 0px, transparent 50%),
+    background:
+      radial-gradient(at 0% 0%, hsla(253, 77%, 66%, 0.4) 0px, transparent 50%),
       radial-gradient(at 50% 0%, hsla(271, 76%, 53%, 0.3) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(339, 100%, 55%, 0.2) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, hsla(217, 100%, 50%, 0.2) 0px, transparent 50%),
-      radial-gradient(at 50% 50%, hsla(180, 100%, 50%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 50%, hsla(339, 100%, 70%, 0.2) 0px, transparent 50%);
+      radial-gradient(
+        at 100% 0%,
+        hsla(339, 100%, 55%, 0.2) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 0% 50%,
+        hsla(217, 100%, 50%, 0.2) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 50% 50%,
+        hsla(180, 100%, 50%, 0.1) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 100% 50%,
+        hsla(339, 100%, 70%, 0.2) 0px,
+        transparent 50%
+      );
   }
 
   /* 3D Transform Utilities */
@@ -159,15 +174,21 @@
 
   /* Glow Effects */
   .glow-indigo {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), 0 0 40px rgba(99, 102, 241, 0.2);
+    box-shadow:
+      0 0 20px rgba(99, 102, 241, 0.4),
+      0 0 40px rgba(99, 102, 241, 0.2);
   }
 
   .glow-purple {
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
+    box-shadow:
+      0 0 20px rgba(168, 85, 247, 0.4),
+      0 0 40px rgba(168, 85, 247, 0.2);
   }
 
   .glow-pink {
-    box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 0 40px rgba(236, 72, 153, 0.2);
+    box-shadow:
+      0 0 20px rgba(236, 72, 153, 0.4),
+      0 0 40px rgba(236, 72, 153, 0.2);
   }
 }
 
@@ -183,7 +204,6 @@
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -195,7 +215,6 @@
 }
 
 @keyframes glow {
-
   0%,
   100% {
     opacity: 1;
@@ -221,7 +240,6 @@
 }
 
 @keyframes mesh {
-
   0%,
   100% {
     background-position: 0% 0%;
