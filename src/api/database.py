@@ -17,3 +17,27 @@ def get_db():
         yield db
     finally:
         db.close()
+
+import time
+import logging
+from functools import wraps
+from sqlalchemy.exc import OperationalError
+
+logger = logging.getLogger(__name__)
+
+def retry_on_lock(max_retries=5, delay=1.0):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except OperationalError as e:
+                    if "locked" in str(e) and attempt < max_retries - 1:
+                        logger.warning(f"Database locked, retrying in {delay}s (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(delay)
+                    else:
+                        raise
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator

@@ -1,4 +1,4 @@
-import { API_URL, fetchWithAuth, showToast } from './utils.js';
+import { API_URL, fetchWithAuth, showToast, escapeHTML } from './utils.js';
 import { updateSidebarStats } from './stats.js';
 import { addTagToMember, removeTagFromMember, getSelectedTagIds, getTagOperator } from './tags.js';
 
@@ -23,7 +23,7 @@ export async function loadMembers(silent = false) {
 
         // Process members
         allMembers = allMembers.map(m => {
-            const lastCheck = m.check_results.length > 0 ? m.check_results[m.check_results.length - 1] : null;
+            const lastCheck = m.check_results.length > 0 ? m.check_results.at(-1) : null;
             let status = 'Unchecked';
             let electorate = '-';
 
@@ -296,12 +296,12 @@ export function enableEditMode() {
             let options = '<option value="">None</option>';
             if (window.parties) {
                 window.parties.forEach(p => {
-                    options += `<option value="${p.id}" ${currentValue === p.name ? 'selected' : ''}>${p.name} (${p.type})</option>`;
+                    options += `<option value="${escapeHTML(p.id)}" ${currentValue === p.name ? 'selected' : ''}>${escapeHTML(p.name)} (${escapeHTML(p.type)})</option>`;
                 });
             }
             field.innerHTML = `<select id="edit_party_id" class="w-full border rounded px-2 py-1 text-sm">${options}</select>`;
         } else {
-            field.innerHTML = `<input type="text" id="edit_${fieldName}" value="${currentValue}" class="w-full border rounded px-2 py-1 text-sm">`;
+            field.innerHTML = `<input type="text" id="edit_${escapeHTML(fieldName)}" value="${escapeHTML(currentValue)}" class="w-full border rounded px-2 py-1 text-sm">`;
         }
     });
 
@@ -318,7 +318,14 @@ export async function saveMemberChanges(memberId) {
     const fields = ['first_name', 'middle_name', 'last_name', 'email', 'phone', 'primary_address1', 'primary_city', 'primary_state', 'primary_zip'];
     fields.forEach(f => {
         const input = document.getElementById(`edit_${f}`);
-        if (input) updates[f] = input.value;
+        if (input) {
+            Object.defineProperty(updates, f, {
+                value: input.value,
+                writable: true,
+                enumerable: true,
+                configurable: true
+            });
+        }
     });
 
     const partyInput = document.getElementById('edit_party_id');
@@ -374,10 +381,13 @@ export function toggleSelectAll() {
     const pageEnd = Math.min(pageStart + itemsPerPage, filteredMembers.length);
 
     for (let i = pageStart; i < pageEnd; i++) {
-        if (isChecked) {
-            selectedMembers.add(filteredMembers[i].id);
-        } else {
-            selectedMembers.delete(filteredMembers[i].id);
+        const member = filteredMembers.at(i);
+        if (member) {
+            if (isChecked) {
+                selectedMembers.add(member.id);
+            } else {
+                selectedMembers.delete(member.id);
+            }
         }
     }
 
@@ -432,9 +442,6 @@ export async function showMemberDetail(id) {
 
 function renderMemberDetailModal(fullMember) {
     const detailContent = document.getElementById('memberDetailContent');
-    // ... (Copy of the large HTML block from app.js) ...
-    // I will put a placeholder here and fill it in with a separate edit if needed, 
-    // but better to do it now.
 
     detailContent.innerHTML = `
         <div class="grid grid-cols-2 gap-6">
@@ -443,21 +450,21 @@ function renderMemberDetailModal(fullMember) {
                 <dl class="space-y-2">
                     <div>
                         <dt class="text-xs text-slate-500 font-semibold">Full Name</dt>
-                        <dd class="text-sm text-slate-900 font-medium">${fullMember.first_name} ${fullMember.middle_name || ''} ${fullMember.last_name}</dd>
+                        <dd class="text-sm text-slate-900 font-medium">${escapeHTML(fullMember.first_name)} ${escapeHTML(fullMember.middle_name || '')} ${escapeHTML(fullMember.last_name)}</dd>
                     </div>
                     <div>
                         <dt class="text-xs text-slate-500 font-semibold">NationBuilder ID</dt>
-                        <dd class="text-sm text-slate-900 font-mono">${fullMember.nationbuilder_id}</dd>
+                        <dd class="text-sm text-slate-900 font-mono">${escapeHTML(fullMember.nationbuilder_id)}</dd>
                     </div>
-                    ${fullMember.email ? `<div><dt class="text-xs text-slate-500 font-semibold">Email</dt><dd class="text-sm text-slate-900">${fullMember.email}</dd></div>` : ''}
-                    ${fullMember.phone ? `<div><dt class="text-xs text-slate-500 font-semibold">Phone</dt><dd class="text-sm text-slate-900">${fullMember.phone}</dd></div>` : ''}
-                    ${fullMember.membership_status ? `<div><dt class="text-xs text-slate-500 font-semibold">Membership Status</dt><dd class="text-sm"><span class="inline-flex px-2 py-1 rounded text-xs font-semibold ${fullMember.membership_status === 'active' ? 'bg-green-100 text-green-800' : fullMember.membership_status === 'lapsed' ? 'bg-orange-100 text-orange-800' : 'bg-slate-100 text-slate-800'}">${fullMember.membership_status}</span></dd></div>` : ''}
-                    ${fullMember.resignation_date ? `<div><dt class="text-xs text-slate-500 font-semibold">Resignation Date</dt><dd class="text-sm text-slate-900">${new Date(fullMember.resignation_date).toLocaleDateString()}</dd></div>` : ''}
+                    ${fullMember.email ? `<div><dt class="text-xs text-slate-500 font-semibold">Email</dt><dd class="text-sm text-slate-900">${escapeHTML(fullMember.email)}</dd></div>` : ''}
+                    ${fullMember.phone ? `<div><dt class="text-xs text-slate-500 font-semibold">Phone</dt><dd class="text-sm text-slate-900">${escapeHTML(fullMember.phone)}</dd></div>` : ''}
+                    ${fullMember.membership_status ? `<div><dt class="text-xs text-slate-500 font-semibold">Membership Status</dt><dd class="text-sm"><span class="inline-flex px-2 py-1 rounded text-xs font-semibold ${fullMember.membership_status === 'active' ? 'bg-green-100 text-green-800' : fullMember.membership_status === 'lapsed' ? 'bg-orange-100 text-orange-800' : 'bg-slate-100 text-slate-800'}">${escapeHTML(fullMember.membership_status)}</span></dd></div>` : ''}
+                    ${fullMember.resignation_date ? `<div><dt class="text-xs text-slate-500 font-semibold">Resignation Date</dt><dd class="text-sm text-slate-900">${escapeHTML(new Date(fullMember.resignation_date).toLocaleDateString())}</dd></div>` : ''}
                 </dl>
                 
                 ${fullMember.membership_status !== 'Resigned' && fullMember.membership_status !== 'Archived' ? `
                 <div class="mt-4">
-                    <button onclick="window.openResignModal(${fullMember.id}, '${fullMember.first_name} ${fullMember.last_name}')" class="text-xs text-red-600 hover:text-red-800 font-medium border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded transition-colors">
+                    <button onclick="window.openResignModal(${escapeHTML(fullMember.id)}, '${escapeHTML(fullMember.first_name)} ${escapeHTML(fullMember.last_name)}')" class="text-xs text-red-600 hover:text-red-800 font-medium border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded transition-colors">
                         Resign Member
                     </button>
                 </div>
@@ -466,9 +473,9 @@ function renderMemberDetailModal(fullMember) {
             <div>
                 <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-3">Address</h3>
                 <dl class="space-y-2">
-                    <div><dt class="text-xs text-slate-500 font-semibold">Street</dt><dd class="text-sm text-slate-900">${fullMember.primary_address1}</dd></div>
-                    <div><dt class="text-xs text-slate-500 font-semibold">Suburb</dt><dd class="text-sm text-slate-900">${fullMember.primary_city}</dd></div>
-                    <div><dt class="text-xs text-slate-500 font-semibold">State & Postcode</dt><dd class="text-sm text-slate-900">${fullMember.primary_state} ${fullMember.primary_zip}</dd></div>
+                    <div><dt class="text-xs text-slate-500 font-semibold">Street</dt><dd class="text-sm text-slate-900">${escapeHTML(fullMember.primary_address1)}</dd></div>
+                    <div><dt class="text-xs text-slate-500 font-semibold">Suburb</dt><dd class="text-sm text-slate-900">${escapeHTML(fullMember.primary_city)}</dd></div>
+                    <div><dt class="text-xs text-slate-500 font-semibold">State & Postcode</dt><dd class="text-sm text-slate-900">${escapeHTML(fullMember.primary_state)} ${escapeHTML(fullMember.primary_zip)}</dd></div>
                 </dl>
             </div>
         </div>
@@ -477,14 +484,14 @@ function renderMemberDetailModal(fullMember) {
         <div class="border-t border-slate-200 pt-6 mt-6">
             <div class="flex justify-between items-center mb-3">
                 <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide">Tags</h3>
-                <button onclick="window.showAddTagToMember(${fullMember.id})" class="text-xs text-indigo-600 hover:text-indigo-900 font-medium hover:underline">+ Add Tag</button>
+                <button onclick="window.showAddTagToMember(${escapeHTML(fullMember.id)})" class="text-xs text-indigo-600 hover:text-indigo-900 font-medium hover:underline">+ Add Tag</button>
             </div>
             <div id="memberTagsContainer" class="flex flex-wrap gap-2">
                 ${fullMember.tags && fullMember.tags.length > 0 ?
             fullMember.tags.map(tag => `
-                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border" style="background-color: ${tag.color}20; border-color: ${tag.color}; color: ${tag.color}">
-                            ${tag.name}
-                            <button onclick="window.removeTagFromMember(${fullMember.id}, ${tag.id})" class="hover:opacity-70">×</button>
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border" style="background-color: ${escapeHTML(tag.color)}20; border-color: ${escapeHTML(tag.color)}; color: ${escapeHTML(tag.color)}">
+                            ${escapeHTML(tag.name)}
+                            <button onclick="window.removeTagFromMember(${escapeHTML(fullMember.id)}, ${escapeHTML(tag.id)})" class="hover:opacity-70">×</button>
                         </span>
                     `).join('') :
             '<p class="text-slate-500 text-sm italic">No tags assigned</p>'
@@ -499,14 +506,14 @@ function renderMemberDetailModal(fullMember) {
             </div>
             <div class="mb-4">
                 <textarea id="newNoteInput" placeholder="Add a note..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="2"></textarea>
-                <button onclick="window.addNoteToMember(${fullMember.id})" class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">Add Note</button>
+                <button onclick="window.addNoteToMember(${escapeHTML(fullMember.id)})" class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">Add Note</button>
             </div>
             <div id="memberNotesContainer" class="space-y-3">
                 ${fullMember.notes && fullMember.notes.length > 0 ?
             fullMember.notes.map(note => `
                         <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                            <div class="text-sm text-slate-900">${note.note}</div>
-                            <div class="text-xs text-slate-500 mt-2">${note.created_by ? `By ${note.created_by} • ` : ''}${new Date(note.created_at).toLocaleString()}</div>
+                            <div class="text-sm text-slate-900">${escapeHTML(note.note)}</div>
+                            <div class="text-xs text-slate-500 mt-2">${note.created_by ? `By ${escapeHTML(note.created_by)} • ` : ''}${escapeHTML(new Date(note.created_at).toLocaleString())}</div>
                         </div>
                     `).join('') :
             '<p class="text-slate-500 text-sm italic">No notes yet</p>'
@@ -522,13 +529,13 @@ function renderMemberDetailModal(fullMember) {
                     ${fullMember.check_results.slice().reverse().map(check => `
                         <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
                             <div class="flex justify-between items-start mb-2">
-                                <span class="text-xs font-semibold text-slate-500">${new Date(check.timestamp).toLocaleString()}</span>
-                                <span class="text-xs px-2 py-1 rounded font-medium ${check.result === 'Pass' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${check.result}</span>
+                                <span class="text-xs font-semibold text-slate-500">${escapeHTML(new Date(check.timestamp).toLocaleString())}</span>
+                                <span class="text-xs px-2 py-1 rounded font-medium ${check.result === 'Pass' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${escapeHTML(check.result)}</span>
                             </div>
                             ${check.federal_division ? `
                                 <dl class="grid grid-cols-2 gap-2 text-xs mt-2">
-                                    <div><dt class="text-slate-500">Federal:</dt><dd class="font-medium">${check.federal_division}</dd></div>
-                                    ${check.state_division ? `<div><dt class="text-slate-500">State:</dt><dd class="font-medium">${check.state_division}</dd></div>` : ''}
+                                    <div><dt class="text-slate-500">Federal:</dt><dd class="font-medium">${escapeHTML(check.federal_division)}</dd></div>
+                                    ${check.state_division ? `<div><dt class="text-slate-500">State:</dt><dd class="font-medium">${escapeHTML(check.state_division)}</dd></div>` : ''}
                                 </dl>
                             ` : ''}
                         </div>
@@ -778,7 +785,7 @@ export async function openAnnualReminders() {
     const monthNames = ["January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
-    document.getElementById('currentMonthName').textContent = monthNames[new Date().getMonth()];
+    document.getElementById('currentMonthName').textContent = monthNames.at(new Date().getMonth());
 
     try {
         const response = await fetchWithAuth(`${API_URL}/members/reminders/annual`);
@@ -792,12 +799,12 @@ export async function openAnnualReminders() {
         list.innerHTML = members.map(m => `
             <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100 hover:bg-slate-100 transition-colors">
                 <div>
-                    <div class="font-semibold text-slate-900">${m.first_name} ${m.last_name}</div>
-                    <div class="text-xs text-slate-500">Joined: ${new Date(m.join_date).toLocaleDateString()}</div>
+                    <div class="font-semibold text-slate-900">${escapeHTML(m.first_name)} ${escapeHTML(m.last_name)}</div>
+                    <div class="text-xs text-slate-500">Joined: ${escapeHTML(new Date(m.join_date).toLocaleDateString())}</div>
                 </div>
                 <div class="flex gap-2">
-                    <a href="mailto:${m.email}" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200">Email</a>
-                    <button onclick="window.showMemberDetail(${m.id}); document.getElementById('annualRemindersModal').classList.add('hidden')" class="text-xs bg-white border border-slate-300 text-slate-700 px-2 py-1 rounded hover:bg-slate-50">View</button>
+                    <a href="mailto:${escapeHTML(m.email)}" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200">Email</a>
+                    <button onclick="window.showMemberDetail(${escapeHTML(m.id)}); document.getElementById('annualRemindersModal').classList.add('hidden')" class="text-xs bg-white border border-slate-300 text-slate-700 px-2 py-1 rounded hover:bg-slate-50">View</button>
                 </div>
             </div>
         `).join('');

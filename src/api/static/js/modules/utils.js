@@ -1,6 +1,16 @@
 // Shared Constants
 export const API_URL = '';
 
+export function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Toast Notification
 export function showToast(message, type = 'success') {
     const container = document.getElementById('toastContainer');
@@ -10,10 +20,13 @@ export function showToast(message, type = 'success') {
 
     toast.className = `${bgClass} text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-x-full opacity-0 flex items-center gap-3 min-w-[300px]`;
     toast.innerHTML = `
-        <span class="text-2xl">${icon}</span>
-        <span class="font-medium flex-grow">${message}</span>
-        <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white text-xl leading-none">×</button>
+        <span class="text-2xl"></span>
+        <span class="font-medium flex-grow"></span>
+        <button class="text-white/80 hover:text-white text-xl leading-none">×</button>
     `;
+    toast.children[0].textContent = icon;
+    toast.children[1].textContent = message;
+    toast.children[2].onclick = () => toast.remove();
 
     container.appendChild(toast);
     setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 50);

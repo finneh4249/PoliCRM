@@ -153,7 +153,7 @@ window.setActiveView = function (view) {
         'duplicates': { title: 'Duplicate Members', subtitle: 'Potential duplicate records' }
     };
 
-    if (titles[view]) {
+    if (Object.prototype.hasOwnProperty.call(titles, view)) {
         document.getElementById('page-title').textContent = titles[view].title;
         document.getElementById('page-subtitle').textContent = titles[view].subtitle;
     }

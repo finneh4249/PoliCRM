@@ -29,6 +29,26 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="AEC CRM API")
 
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.requests import Request
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.error(f"Validation error: {exc}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "message": "Validation Error"},
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global error: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc), "message": "Internal Server Error"},
+    )
+
 # Mount GeoJSON files - REMOVED (Conflicting with static/geojson)
 # geojson_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GeoJSON")
 # if os.path.exists(geojson_path):

@@ -4,7 +4,8 @@ import time
 import logging
 from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
-from .database import SessionLocal
+from sqlalchemy.orm import Session
+from .database import SessionLocal, retry_on_lock
 from .models import Member, CheckResult
 from aec_core.browser import get_driver, getAECStatus, AECResult
 from .rate_limiter import RateLimiter
@@ -27,6 +28,9 @@ class BrowserPool:
         self.rate_limiter = RateLimiter(max_per_hour=100, max_per_day=2000)
         self.queued_items = set()
         self.worker_status = {}
+        self.worker_last_activity = {}
+        self.watchdog_thread = None
+
 
     def start(self):
         """Start the worker threads."""
@@ -35,7 +39,12 @@ class BrowserPool:
             t = threading.Thread(target=self._worker_loop, args=(i,), daemon=True)
             t.start()
             self.threads.append(t)
-        logger.info(f"Browser pool started with {self.pool_size} workers")
+        
+        # Start watchdog
+        self.watchdog_thread = threading.Thread(target=self._watchdog_loop, daemon=True)
+        self.watchdog_thread.start()
+        
+        logger.info(f"Browser pool started with {self.pool_size} workers and watchdog")
 
     def stop(self):
         """Stop the worker threads and close drivers."""
@@ -46,6 +55,9 @@ class BrowserPool:
         
         for t in self.threads:
             t.join()
+            
+        if self.watchdog_thread:
+            self.watchdog_thread.join()
         
         with self.driver_lock:
             for driver in self.drivers:
@@ -84,6 +96,7 @@ class BrowserPool:
         
         logger.info(f"Worker {worker_id} ready")
         self.worker_status[worker_id] = {"status": "idle", "member_id": None, "member_name": None}
+        self.worker_last_activity[worker_id] = time.time()
 
         while self.running:
             try:
@@ -111,6 +124,7 @@ class BrowserPool:
                     "member_id": member.id,
                     "member_name": f"{member.first_name} {member.last_name}"
                 }
+                self.worker_last_activity[worker_id] = time.time()
 
                 # Prepare data for getAECStatus
                 # It expects a dict with specific keys
@@ -156,10 +170,11 @@ class BrowserPool:
                     local_ward=status.local_ward
                 )
 
-                db.add(result)
-                db.commit()
+                # Save result with retry logic
+                self._save_result(db, result)
                 logger.info(f"Worker {worker_id} finished member {member_id}: {status.result}")
                 self.worker_status[worker_id] = {"status": "idle", "member_id": None, "member_name": None}
+                self.worker_last_activity[worker_id] = time.time()
 
             except Exception as e:
                 logger.error(f"Worker {worker_id} error: {e}")
@@ -186,3 +201,49 @@ class BrowserPool:
             "workers": self.worker_status,
             "pool_size": self.pool_size
         }
+
+    def _watchdog_loop(self):
+        """Monitor workers and restart stuck ones."""
+        logger.info("Watchdog started")
+        while self.running:
+            try:
+                current_time = time.time()
+                for worker_id in list(self.worker_status.keys()):
+                    last_active = self.worker_last_activity.get(worker_id, current_time)
+                    status = self.worker_status.get(worker_id, {}).get("status")
+                    
+                    # If worker is checking and hasn't updated activity in 5 minutes
+                    if status == "checking" and (current_time - last_active) > 300:
+                        logger.warning(f"Worker {worker_id} stuck for > 5 mins. Restarting...")
+                        
+                        # Attempt to close driver
+                        with self.driver_lock:
+                            if worker_id < len(self.drivers):
+                                try:
+                                    self.drivers[worker_id].quit()
+                                except Exception:
+                                    pass
+                                # We don't remove from list here to avoid index issues, 
+                                # the worker loop handles its own driver lifecycle mostly,
+                                # but we might need a way to signal the thread to die.
+                                # Since threads are hard to kill in Python, we'll rely on
+                                # the driver.quit() causing an exception in the worker loop
+                                # if it's interacting with the driver.
+                        
+                        # Note: True thread killing is hard. 
+                        # Ideally we'd set a flag that the worker checks.
+                        # For now, we just log it. A robust solution requires multiprocessing.
+                        # However, if the driver is killed, the selenium call should throw 
+                        # an exception and the worker loop should catch it and restart.
+                        
+            except Exception as e:
+                logger.error(f"Watchdog error: {e}")
+            
+            time.sleep(60)
+
+    @retry_on_lock()
+    def _save_result(self, db: Session, result: CheckResult):
+        """Save result to database with retry logic."""
+        db.add(result)
+        db.commit()
+

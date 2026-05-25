@@ -1,4 +1,4 @@
-import { API_URL, fetchWithAuth } from './utils.js';
+import { API_URL, fetchWithAuth, escapeHTML } from './utils.js';
 
 export async function loadDashboardStats() {
     try {
@@ -48,10 +48,10 @@ export async function loadDashboardStats() {
                                 <div class="w-full bg-indigo-100 rounded-t-lg relative group-hover:bg-indigo-200 transition-all" 
                                      style="height: ${Math.max((count / stats.total_members) * 200, 4)}px">
                                      <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        ${count}
+                                        ${escapeHTML(count)}
                                      </div>
                                 </div>
-                                <div class="mt-2 text-xs font-medium text-slate-500">${state}</div>
+                                <div class="mt-2 text-xs font-medium text-slate-500">${escapeHTML(state)}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -85,13 +85,13 @@ export async function loadElectorateStats() {
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-slate-200">
-                                ${electorates.slice(0, 10).map((elec, index) => `
+                                 ${electorates.slice(0, 10).map((elec, index) => `
                                     <tr class="hover:bg-slate-50">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                                            ${index + 1}. ${elec.federal_division}
+                                            ${escapeHTML(index + 1)}. ${escapeHTML(elec.federal_division)}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                            ${elec.count}
+                                            ${escapeHTML(elec.count)}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                             <div class="w-24 bg-slate-200 rounded-full h-2">

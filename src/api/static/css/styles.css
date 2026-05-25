@@ -1,54 +1,60 @@
 body {
-    font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .animate-fade-in {
-    animation: fadeIn 0.3s ease-in;
+  animation: fadeIn 0.3s ease-in;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .checkbox-custom {
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border: 2px solid #cbd5e1;
-    border-radius: 4px;
-    cursor: pointer;
-    position: relative;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
 }
 
 .checkbox-custom:checked {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
+  background-color: #3b82f6;
+  border-color: #3b82f6;
 }
 
 .checkbox-custom:checked::after {
-    content: '✓';
-    position: absolute;
-    color: white;
-    font-size: 14px;
-    top: -2px;
-    left: 2px;
+  content: "✓";
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  top: -2px;
+  left: 2px;
 }
 
 .sidebar-link {
-    transition: all 0.2s;
+  transition: all 0.2s;
 }
 
 .sidebar-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
 }
 
 .sidebar-link.active {
-    background-color: rgba(255, 255, 255, 0.15);
-    border-left: 4px solid white;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-left: 4px solid white;
 }

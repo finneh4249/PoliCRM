@@ -1,4 +1,4 @@
-import { API_URL, fetchWithAuth, showToast } from './utils.js';
+import { API_URL, fetchWithAuth, showToast, escapeHTML } from './utils.js';
 
 let selectedTagIds = new Set();
 let tagOperator = 'AND';
@@ -25,11 +25,11 @@ export async function loadTags() {
             container.innerHTML = tags.map(tag => `
                 <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg group hover:bg-slate-100 transition-colors">
                     <div class="flex items-center gap-3">
-                        <span class="w-3 h-3 rounded-full" style="background-color: ${tag.color}"></span>
-                        <span class="font-medium text-slate-700">${tag.name}</span>
-                        ${tag.description ? `<span class="text-xs text-slate-400">(${tag.description})</span>` : ''}
+                        <span class="w-3 h-3 rounded-full" style="background-color: ${escapeHTML(tag.color)}"></span>
+                        <span class="font-medium text-slate-700">${escapeHTML(tag.name)}</span>
+                        ${tag.description ? `<span class="text-xs text-slate-400">(${escapeHTML(tag.description)})</span>` : ''}
                     </div>
-                    <button onclick="deleteTag(${tag.id})" class="text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all">
+                    <button onclick="deleteTag(${escapeHTML(tag.id)})" class="text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
@@ -41,11 +41,11 @@ export async function loadTags() {
         if (filterList) {
             filterList.innerHTML = tags.map(tag => `
                 <label class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded cursor-pointer">
-                    <input type="checkbox" class="checkbox-custom tag-filter-cb" value="${tag.id}" 
+                    <input type="checkbox" class="checkbox-custom tag-filter-cb" value="${escapeHTML(tag.id)}" 
                         ${selectedTagIds.has(tag.id) ? 'checked' : ''}
-                        onchange="toggleTagFilter(${tag.id})">
-                    <span class="w-2 h-2 rounded-full" style="background-color: ${tag.color}"></span>
-                    <span class="text-sm text-slate-700">${tag.name}</span>
+                        onchange="toggleTagFilter(${escapeHTML(tag.id)})">
+                    <span class="w-2 h-2 rounded-full" style="background-color: ${escapeHTML(tag.color)}"></span>
+                    <span class="text-sm text-slate-700">${escapeHTML(tag.name)}</span>
                 </label>
             `).join('');
         }
@@ -165,7 +165,7 @@ export function showAddTagToMember(memberId) {
         .then(tags => {
             const select = document.getElementById('tagSelect');
             if (select) {
-                select.innerHTML = tags.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                select.innerHTML = tags.map(t => `<option value="${escapeHTML(t.id)}">${escapeHTML(t.name)}</option>`).join('');
             }
             modal.classList.remove('hidden');
         })
