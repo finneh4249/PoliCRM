@@ -9,7 +9,9 @@ AEC Checker automates verification of Australian voter enrollment by submitting 
 **Standard WebDriver `Select()` only works for suburb dropdown** (`DropdownSuburb`), not streets.
 
 ### Data Flow & CSV Schema
+
 Input CSV (NationBuilder export format):
+
 ```
 first_name, middle_name, last_name, nationbuilder_id,
 primary_address1, primary_city, primary_state, primary_zip
@@ -20,6 +22,7 @@ Output adds: `AEC_result`, `federal_division`, `state_division`, `local_governme
 **Address normalization** (`convert_addresses.py`) must run first to convert "123 Smith Street" → "SMITH ST" and "Victoria" → "VIC". See `streetTypes` dict (220+ mappings) and `stateAbs` in `src/utils/convert_addresses.py`.
 
 ### Result Types (AECResult Enum)
+
 - `PASS`: Electoral divisions extracted via regex (`extract_electoral_info()`)
 - `FAIL_SUBURB`: Suburb not in AEC dropdown (missing postcode or typo)
 - `FAIL_STREET`: Street not found (address normalization needed)
@@ -30,6 +33,7 @@ Output adds: `AEC_result`, `federal_division`, `state_division`, `local_governme
 ## Development Workflows
 
 ### Running Checks
+
 ```bash
 # Interactive TUI (recommended)
 python aec_checker.py
@@ -43,6 +47,7 @@ python aec_checker.py --infile data.csv --dry-run
 ```
 
 ### Testing
+
 ```bash
 # Run all tests
 python -m pytest tests/ -v
@@ -54,17 +59,22 @@ python -m unittest tests/test_aec_checker.py
 Tests cover: address parsing (`get_address_components`), normalization (`convert_addresses`), and API endpoints.
 
 ### API Mode (Experimental)
+
 FastAPI backend in `src/api/` for CRM integration:
+
 ```bash
 cd src/api
 uvicorn main:app --reload
 ```
+
 Uses SQLAlchemy models + worker pool pattern (`BrowserPool` in `worker_pool.py`) to queue checks.
 
 ## Code Patterns & Conventions
 
 ### Logging
+
 Use Rich for console + file logging:
+
 ```python
 from rich.logging import RichHandler
 logging.basicConfig(
@@ -73,10 +83,13 @@ logging.basicConfig(
     handlers=[RichHandler(rich_tracebacks=True), file_handler]
 )
 ```
+
 All worker threads log to `aec_checker.log` - **always check this file when debugging failures**.
 
 ### Browser Recovery
+
 Workers auto-reinitialize crashed browsers:
+
 ```python
 def init_driver():
     if driver:
@@ -85,22 +98,28 @@ def init_driver():
     driver.get("https://check.aec.gov.au/")
     return True
 ```
+
 Monitor consecutive failures (`MAX_CONSECUTIVE_FAILURES = 5`) to detect persistent issues.
 
 ### Threading Model
+
 `worker()` function in `src/aec_core/main.py`:
+
 - Uses `queue.Queue` for thread-safe task distribution
 - Each thread gets its own WebDriver instance (stored locally in `driver` variable)
 - Results written with `output_lock` to prevent CSV corruption
 - **Never share WebDriver instances between threads**
 
 ### Validation Before Processing
+
 Always call `validate_membership_data()` before `getAECStatus()`:
+
 ```python
 is_valid, error_msg = validate_membership_data(membership_row)
 if not is_valid:
     return AECStatus(AECResult.FAIL, None, None, None, None)
 ```
+
 Checks: required fields, numeric postcode, non-empty address components.
 
 ## File Organization

@@ -10,6 +10,7 @@
 ### **Essential (MVP - Week 1-4):**
 
 **Member Database:**
+
 - [x] Basic profiles (name, email, phone, address)
 - [x] Electoral data (federal division, state division, LGA, ward)
 - [x] Membership status (active, lapsed, suspended)
@@ -19,6 +20,7 @@
 - [x] Duplicate detection and merging (via NationBuilder ID)
 
 **AEC/Electoral Verification:**
+
 - [x] Automated enrollment verification
 - [x] Electoral division capture
 - [x] Verification status tracking
@@ -27,6 +29,7 @@
 - [ ] VEC/state registration exports
 
 **Import/Export:**
+
 - [x] CSV import (bulk member upload)
 - [ ] CSV export (filtered lists)
 - [ ] VEC/AEC format exports
@@ -35,6 +38,7 @@
 - [ ] Import history and rollback
 
 **Search and Filtering:**
+
 - [x] Text search (name, email, address)
 - [x] Filter by status, state, division
 - [ ] Advanced filters (tags, dates, custom fields)
@@ -42,6 +46,7 @@
 - [x] Quick filters (verified, unverified, etc.)
 
 **Basic Reporting:**
+
 - [x] Member count by state/division
 - [x] Verification status summary
 - [ ] Growth metrics (new members/month)
@@ -49,6 +54,7 @@
 - [ ] Member activity reports
 
 **Developer Experience**
+
 - [x] Migrate to React + Vite for frontend (was VanillaJS, Astro abandoned due to dependency issues)
 
 ---
@@ -58,6 +64,7 @@
 ### **Standard (Month 2-3):**
 
 **Email Campaigns:**
+
 - [ ] Email composer (WYSIWYG editor)
 - [ ] Template library (welcome, renewal, event invite)
 - [ ] Personalization (merge fields)
@@ -69,6 +76,7 @@
 - [ ] Compliance (CAN-SPAM, GDPR)
 
 **SMS Messaging:**
+
 - [ ] Bulk SMS sending
 - [ ] Personalized SMS
 - [ ] Opt-in/opt-out management
@@ -78,6 +86,7 @@
 - [ ] Two-way messaging (replies)
 
 **Email Automation:**
+
 - [ ] Welcome sequences (new member onboarding)
 - [ ] Renewal reminders (membership expiry)
 - [ ] Event reminders
@@ -87,6 +96,7 @@
 - [ ] Trigger-based emails
 
 **Communication History:**
+
 - [ ] Full communication log per member
 - [ ] Opens, clicks, replies tracked
 - [ ] Unsubscribe history
@@ -100,6 +110,7 @@
 ### **Advanced (Month 3-4):**
 
 **Event Management:**
+
 - [ ] Event creation (meetings, rallies, fundraisers)
 - [ ] RSVP tracking
 - [ ] Attendance check-in (QR codes)
@@ -111,6 +122,7 @@
 - [ ] Event analytics
 
 **Volunteer Management:**
+
 - [ ] Volunteer recruitment forms
 - [ ] Skill tracking (phone banking, door knocking, social media)
 - [ ] Availability scheduling
@@ -121,6 +133,7 @@
 - [ ] Recognition and rewards
 
 **Task Management:**
+
 - [ ] Task creation and assignment
 - [ ] Task lists by campaign/project
 - [ ] Due dates and reminders
@@ -130,6 +143,7 @@
 - [ ] Task templates
 
 **Action Tracking:**
+
 - [ ] Phone banking logs
 - [ ] Door knocking records
 - [ ] Petition signatures
@@ -140,6 +154,7 @@
 - [ ] Social media interactions
 
 **Supporter Ladder:**
+
 - [ ] Supporter scoring (engagement level)
 - [ ] Progression tracking (subscriber → volunteer → donor → leader)
 - [ ] Automated promotions (based on actions)
@@ -153,6 +168,7 @@
 ### **Revenue Generation (Month 4-5):**
 
 **Donation Processing:**
+
 - [ ] Online donation forms (embedded or standalone)
 - [ ] One-time donations
 - [ ] Recurring donations (monthly, annual)
@@ -164,6 +180,7 @@
 - [ ] Thank you emails
 
 **Fundraising Pages:**
+
 - [ ] Individual fundraising pages (peer-to-peer)
 - [ ] Team fundraising pages
 - [ ] Fundraising leaderboards
@@ -173,6 +190,7 @@
 - [ ] Campaign attribution
 
 **Donor Management:**
+
 - [ ] Donor profiles and history
 - [ ] Donation receipts
 - [ ] Tax reporting
@@ -182,6 +200,7 @@
 - [ ] Donor retention analytics
 
 **Financial Reporting:**
+
 - [ ] Donation reports (by date, campaign, source)
 - [ ] Revenue forecasting
 - [ ] Donor retention metrics
@@ -198,6 +217,7 @@
 ### **Campaign Operations (Month 5-6):**
 
 **Campaign Management:**
+
 - [ ] Multiple campaigns (federal, state, local)
 - [ ] Campaign-specific member lists
 - [ ] Campaign dashboards
@@ -207,6 +227,7 @@
 - [ ] Milestone tracking
 
 **Candidate Management:**
+
 - [ ] Candidate profiles
 - [ ] Electorate assignments
 - [ ] Candidate websites (sub-domains)
@@ -216,6 +237,7 @@
 - [ ] Endorsement tracking
 
 **Electorate Targeting:**
+
 - [ ] Target seat identification
 - [ ] Marginal seat analysis
 - [ ] Member distribution by electorate
@@ -225,6 +247,7 @@
 - [ ] Electorate dashboards
 
 **Voter Contact:**
+
 - [ ] Door knocking app integration
 - [ ] Phone banking interface
 - [ ] Call scripts
@@ -235,6 +258,7 @@
 - [ ] Contact rate tracking
 
 **Field Organizing:**
+
 - [ ] Canvassing routes (map-based)
 - [ ] Territory assignments
 - [ ] Field organizer dashboards
@@ -250,6 +274,7 @@
 ### **Data Intelligence (Month 6-7):**
 
 **Member Analytics:**
+
 - [ ] Demographic breakdowns
 - [ ] Geographic distribution maps
 - [ ] Growth trends over time
@@ -260,6 +285,7 @@
 - [ ] Acquisition source tracking
 
 **Campaign Analytics:**
+
 - [ ] Contact rates and conversion
 - [ ] Voter persuasion modeling
 - [ ] Get-out-the-vote (GOTV) effectiveness
@@ -270,6 +296,7 @@
 - [ ] Social media engagement
 
 **Predictive Analytics:**
+
 - [ ] Member churn prediction
 - [ ] Donor lapse prediction
 - [ ] High-value member identification
@@ -278,6 +305,7 @@
 - [ ] Election outcome modeling
 
 **Custom Reports:**
+
 - [ ] Report builder (drag-and-drop)
 - [ ] Saved reports library
 - [ ] Scheduled report emails
@@ -287,6 +315,7 @@
 - [ ] Real-time dashboards
 
 **Data Export:**
+
 - [ ] Full database export
 - [ ] Filtered exports
 - [ ] API access (for integrations)
@@ -301,6 +330,7 @@
 ### **Legal & Regulatory (Month 7-8):**
 
 **Electoral Compliance:**
+
 - [ ] VEC/AEC registration exports
 - [ ] Annual statement automation
 - [x] Member verification tracking
@@ -310,6 +340,7 @@
 - [ ] AGM tracking and reminders
 
 **Financial Compliance:**
+
 - [ ] Donation limits tracking (per donor)
 - [ ] Prohibited donor detection
 - [ ] Donation source recording
@@ -319,6 +350,7 @@
 - [ ] Electoral expenditure caps
 
 **Data Privacy:**
+
 - [x] GDPR/Privacy Act compliance (PII Encryption)
 - [ ] Consent management
 - [ ] Data access requests (member data portability)
@@ -328,6 +360,7 @@
 - [ ] Audit logs (who accessed what, when)
 
 **User Permissions:**
+
 - [x] Role-based access control (admin, organizer, volunteer)
 - [x] Permission levels (read, write, admin)
 - [ ] Data access restrictions (by state, campaign)
@@ -343,6 +376,7 @@
 ### **Ecosystem (Month 8-9):**
 
 **Website Integration:**
+
 - [ ] Embeddable signup forms
 - [ ] Donation widgets
 - [ ] Event RSVP widgets
@@ -353,6 +387,7 @@
 - [ ] Action page embeds
 
 **Social Media:**
+
 - [ ] Facebook integration (lead ads, events)
 - [ ] Twitter/X integration (followers, engagement)
 - [ ] Instagram integration
@@ -362,6 +397,7 @@
 - [ ] Audience sync (Facebook custom audiences)
 
 **Email Service Providers:**
+
 - [ ] Mailchimp integration
 - [ ] SendGrid integration
 - [ ] Amazon SES integration
@@ -370,6 +406,7 @@
 - [ ] Spam complaint management
 
 **Payment Processors:**
+
 - [ ] Stripe (credit card processing)
 - [ ] PayPal (one-time and recurring)
 - [ ] Direct debit (Australia)
@@ -377,6 +414,7 @@
 - [ ] Cryptocurrency (optional)
 
 **Accounting Software:**
+
 - [ ] Xero integration
 - [ ] QuickBooks integration
 - [ ] MYOB integration
@@ -384,6 +422,7 @@
 - [ ] Transaction sync
 
 **Survey Tools:**
+
 - [ ] Google Forms integration
 - [ ] Typeform integration
 - [ ] SurveyMonkey integration
@@ -391,6 +430,7 @@
 - [ ] Survey results sync
 
 **Calendar Sync:**
+
 - [ ] Google Calendar
 - [ ] Outlook Calendar
 - [ ] Apple Calendar
@@ -398,6 +438,7 @@
 - [ ] RSVP updates
 
 **Zapier/Make Integration:**
+
 - [ ] Connect to 1000+ apps
 - [ ] Workflow automation
 - [ ] Custom integrations
@@ -410,6 +451,7 @@
 ### **Power User (Month 9-12):**
 
 **Mobile App:**
+
 - [ ] iOS and Android apps
 - [ ] Door knocking mode (offline sync)
 - [ ] Phone banking interface
@@ -419,6 +461,7 @@
 - [ ] Mobile donations
 
 **Advanced Automation:**
+
 - [ ] Workflow builder (drag-and-drop)
 - [ ] If/then logic
 - [ ] Multi-step automations
@@ -428,6 +471,7 @@
 - [ ] Smart segments (auto-updating)
 
 **AI Features:**
+
 - [ ] Email subject line optimization
 - [ ] Send time optimization
 - [ ] Content suggestions
@@ -437,6 +481,7 @@
 - [ ] Sentiment analysis (from responses)
 
 **Peer-to-Peer Organizing:**
+
 - [ ] Member-to-member recruitment
 - [ ] Referral tracking
 - [ ] Social sharing incentives
@@ -445,6 +490,7 @@
 - [ ] Distributed organizing dashboard
 
 **Multi-Language:**
+
 - [ ] Interface translation
 - [ ] Multi-language email templates
 - [ ] Localized member portals
@@ -452,6 +498,7 @@
 - [ ] Automated translation (optional)
 
 **White-Label:**
+
 - [ ] Custom branding (logo, colors)
 - [ ] Custom domain (your-party.com.au)
 - [ ] Branded member portal
@@ -466,6 +513,7 @@
 ### **Large Party Scale (Year 2):**
 
 **Multi-Tenant:**
+
 - [ ] State branches (separate databases)
 - [ ] Shared member data (with permissions)
 - [ ] Branch-specific campaigns
@@ -474,6 +522,7 @@
 - [ ] Reporting consolidation
 
 **Advanced Security:**
+
 - [ ] SOC 2 compliance
 - [ ] Annual security audits
 - [ ] Penetration testing
@@ -484,6 +533,7 @@
 - [ ] Advanced threat detection
 
 **Custom Development:**
+
 - [ ] Custom features development
 - [ ] API customization
 - [ ] Custom integrations
@@ -492,6 +542,7 @@
 - [ ] Beta access to new features
 
 **Training & Support:**
+
 - [ ] Onboarding training (video calls)
 - [ ] Documentation library
 - [ ] Video tutorials
@@ -501,6 +552,7 @@
 - [ ] Community forum
 
 **Professional Services:**
+
 - [ ] Data migration from NationBuilder/other CRMs
 - [ ] Custom report creation
 - [ ] Campaign strategy consulting
