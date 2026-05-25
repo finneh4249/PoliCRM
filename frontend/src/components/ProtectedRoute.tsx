@@ -1,31 +1,18 @@
-import type { ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { useStore } from "@nanostores/react";
-import { $user, $loading } from "../stores/authStore";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 interface ProtectedRouteProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const user = useStore($user);
-  const loading = useStore($loading);
-  const location = useLocation();
+  const { isAuthenticated, isLoading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // While restoring session from localStorage, render nothing to avoid flash
+  if (isLoading) return null;
 
-  if (!user) {
-    // Redirect to login, but save the current location
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
