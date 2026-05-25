@@ -1,0 +1,68 @@
+mod models;
+mod api;
+mod crypto;
+
+use axum::{
+    routing::get,
+    Router,
+};
+use sqlx::sqlite::SqlitePoolOptions;
+use std::net::SocketAddr;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv().ok();
+    println!("Starting PoliCRM backend-rs...");
+
+    // Setup connection pool
+    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://crm.db".to_string());
+    
+    // Ensure the db file exists for sqlite
+    if database_url.starts_with("sqlite://") && !std::path::Path::new("crm.db").exists() {
+        std::fs::File::create("crm.db")?;
+    }
+
+    let pool = SqlitePoolOptions::new()
+        .max_connections(5)
+        .connect(&database_url)
+        .await?;
+
+    println!("Running database migrations...");
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await?;
+
+    println!("Database migrations completed successfully.");
+
+    // Build our application with a single route
+    let app = Router::new()
+        .route("/health", get(health_check))
+        .merge(api::router())
+        .with_state(pool);
+
+    // Run it with fallback to alternative ports if occupied
+    let mut port = 8080;
+    let max_port = 8100;
+    let listener = loop {
+        let addr = SocketAddr::from(([127, 0, 0, 1], port));
+        match tokio::net::TcpListener::bind(addr).await {
+            Ok(listener) => {
+                println!("Listening on {}", addr);
+                break listener;
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::AddrInUse && port < max_port => {
+                println!("Port {} is already in use. Trying {}...", port, port + 1);
+                port += 1;
+            }
+            Err(e) => return Err(e.into()),
+        }
+    };
+
+    axum::serve(listener, app).await?;
+
+    Ok(())
+}
+
+async fn health_check() -> &'static str {
+    "OK"
+}
