@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEC CRM - Political Party Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .checkbox-custom {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .checkbox-custom:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .checkbox-custom:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            top: -2px;
+            left: 2px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+
+    <!-- Header -->
+    <div class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold">Political Party CRM</h1>
+                    <p class="text-indigo-100 mt-1">Member Management & Electoral Verification</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="document.getElementById('importModal').classList.remove('hidden')"
+                        class="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-all font-medium border border-white/30">
+                        📁 Import CSV
+                    </button>
+                    <button onclick="document.getElementById('addMemberModal').classList.remove('hidden')"
+                        class="bg-white text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg shadow-lg transition-all font-medium">
+                        + Add Member
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Dashboard -->
+
+        <!-- Stats Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-slate-500 text-xs font-semibold uppercase tracking-wide mb-1">Total Members</div>
+                        <div class="text-3xl font-bold text-slate-900" id="totalMembers">0</div>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">👥</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-slate-500 text-xs font-semibold uppercase tracking-wide mb-1">Verified</div>
+                        <div class="text-3xl font-bold text-green-600" id="verifiedCount">0</div>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">✓</span>
+                    </div>
+                </div>
+                <div class="mt-2 text-sm text-slate-500">
+                    <span id="verifiedPercent">0%</span> of total
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-slate-500 text-xs font-semibold uppercase tracking-wide mb-1">Pending Check</div>
+                        <div class="text-3xl font-bold text-yellow-600" id="pendingCount">0</div>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">⏳</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-slate-500 text-xs font-semibold uppercase tracking-wide mb-1">Failed Checks</div>
+                        <div class="text-3xl font-bold text-red-600" id="failedCount">0</div>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">✗</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Bar -->
+        <div class="bg-white p-4 rounded-xl shadow-md border border-slate-200 mb-6">
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="text-sm font-semibold text-slate-700 mr-2">Quick Actions:</span>
+                <button onclick="checkSelected()" id="checkSelectedBtn"
+                    class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span>🔍</span> Check Selected (<span id="selectedCount">0</span>)
+                </button>
+                <button onclick="retryCaptchas()"
+                    class="bg-orange-50 text-orange-600 hover:bg-orange-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2">
+                    <span>🔄</span> Retry Captchas
+                </button>
+                <button onclick="exportSelected()"
+                    class="bg-green-50 text-green-600 hover:bg-green-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2">
+                    <span>📊</span> Export Selected
+                </button>
+                <button onclick="exportAll()"
+                    class="bg-slate-50 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2">
+                    <span>📥</span> Export All
+                </button>
+                <div class="flex-grow"></div>
+                <span class="text-xs text-slate-500">Auto-refresh: <span id="refreshTimer">10s</span></span>
+            </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 mb-6">
+        <!-- Filters & Search -->
+        <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 mb-6">
+            <div class="flex flex-col lg:flex-row gap-4">
+                <div class="flex-grow">
+                    <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2 block">Search Members</label>
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Search by name, NB ID, suburb, or electorate..."
+                            class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="w-full lg:w-48">
+                    <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2 block">Status</label>
+                    <select id="statusFilter"
+                        class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="all">All Statuses</option>
+                        <option value="Verified">✓ Verified</option>
+                        <option value="Captcha">🔄 Captcha</option>
+                        <option value="Fail">✗ Failed</option>
+                        <option value="Unchecked">⏳ Unchecked</option>
+                    </select>
+                </div>
+                
+                <div class="w-full lg:w-48">
+                    <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2 block">State</label>
+                    <select id="stateFilter"
+                        class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="all">All States</option>
+                        <option value="NSW">NSW</option>
+                        <option value="VIC">VIC</option>
+                        <option value="QLD">QLD</option>
+                        <option value="WA">WA</option>
+                        <option value="SA">SA</option>
+                        <option value="TAS">TAS</option>
+                        <option value="ACT">ACT</option>
+                        <option value="NT">NT</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-end">
+                    <button onclick="clearFilters()"
+                        class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 border border-slate-300 rounded-lg transition-colors font-medium text-sm">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Members Table -->
+        <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <input type="checkbox" id="selectAll" class="checkbox-custom" onchange="toggleSelectAll()">
+                    <h2 class="font-bold text-slate-900 text-lg">Members Directory</h2>
+                </div>
+                <div class="text-sm text-slate-600 font-medium" id="showingStats">Loading...</div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-100 text-slate-700 font-semibold border-b-2 border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4 w-12"></th>
+                            <th class="px-6 py-4 cursor-pointer hover:text-indigo-600 transition-colors" onclick="sortBy('name')">
+                                Name <span class="text-xs">▼</span>
+                            </th>
+                            <th class="px-6 py-4">Address</th>
+                            <th class="px-6 py-4 cursor-pointer hover:text-indigo-600 transition-colors" onclick="sortBy('id')">
+                                NB ID <span class="text-xs">▼</span>
+                            </th>
+                            <th class="px-6 py-4 cursor-pointer hover:text-indigo-600 transition-colors" onclick="sortBy('status')">
+                                Status <span class="text-xs">▼</span>
+                            </th>
+                            <th class="px-6 py-4">Federal Electorate</th>
+                            <th class="px-6 py-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTableBody" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                                <div class="text-4xl mb-2">📋</div>
+                                Loading members...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <label class="text-sm text-slate-600">Rows per page:</label>
+                    <select id="itemsPerPageSelect" onchange="changeItemsPerPage()" 
+                        class="border border-slate-300 rounded px-2 py-1 text-sm">
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="changePage(-1)" id="prevBtn"
+                        class="px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors">
+                        ← Previous
+                    </button>
+                    <div class="flex gap-1" id="pageNumbers"></div>
+                    <button onclick="changePage(1)" id="nextBtn"
+                        class="px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors">
+                        Next →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Detail Modal -->
+    <div id="memberDetailModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-fade-in">
+            <div class="gradient-bg text-white px-6 py-4 flex justify-between items-center rounded-t-2xl">
+                <h2 class="text-2xl font-bold" id="detailMemberName">Member Details</h2>
+                <button onclick="document.getElementById('memberDetailModal').classList.add('hidden')"
+                    class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-6" id="memberDetailContent">
+                <!-- Content populated by JS -->
+            </div>
+            
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="document.getElementById('memberDetailModal').classList.add('hidden')"
+                    class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Close</button>
+                <button onclick="recheckCurrentMember()"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                    🔍 Re-check Enrollment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full animate-fade-in">
+            <div class="gradient-bg text-white px-6 py-4 flex justify-between items-center rounded-t-2xl">
+                <h2 class="text-xl font-bold">📁 Import Members</h2>
+                <button onclick="document.getElementById('importModal').classList.add('hidden')"
+                    class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div class="p-6">
+                <p class="text-slate-600 mb-4">Upload a NationBuilder CSV export to bulk import members.</p>
+
+                <div class="border-2 border-dashed border-indigo-300 rounded-xl p-10 text-center hover:bg-indigo-50 hover:border-indigo-400 transition-all cursor-pointer"
+                    onclick="document.getElementById('csvInput').click()">
+                    <input type="file" id="csvInput" class="hidden" accept=".csv">
+                    <div class="text-indigo-400 mb-3">
+                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                        </svg>
+                    </div>
+                    <p class="text-slate-700 font-semibold text-lg">Click to upload CSV</p>
+                    <p class="text-sm text-slate-500 mt-2" id="fileName">No file selected</p>
+                </div>
+
+                <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-xs text-blue-800 font-medium">
+                        <strong>Expected columns:</strong> first_name, last_name, nationbuilder_id, primary_address1, primary_city, primary_state, primary_zip
+                    </p>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 rounded-b-2xl">
+                <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')"
+                    class="px-5 py-2.5 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors font-medium">Cancel</button>
+                <button type="button" onclick="uploadCSV()"
+                    class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                    Import Members
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div id="addMemberModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full animate-fade-in">
+            <div class="gradient-bg text-white px-6 py-4 flex justify-between items-center rounded-t-2xl">
+                <h2 class="text-xl font-bold">➕ Add New Member</h2>
+                <button onclick="document.getElementById('addMemberModal').classList.add('hidden')"
+                    class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            
+            <form id="addMemberForm" class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1 block">First Name *</label>
+                        <input type="text" name="first_name" placeholder="John"
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1 block">Last Name *</label>
+                        <input type="text" name="last_name" placeholder="Smith"
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1 block">Middle Name</label>
+                    <input type="text" name="middle_name" placeholder="Optional"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1 block">NationBuilder ID *</label>
+                    <input type="number" name="nationbuilder_id" placeholder="12345"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                </div>
+                
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1 block">Street Address *</label>
+                    <input type="text" name="primary_address1" placeholder="123 Main St"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1 block">Suburb *</label>
+                        <input type="text" name="primary_city" placeholder="Melbourne"
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1 block">State *</label>
+                        <select name="primary_state" 
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                            <option value="">Select...</option>
+                            <option value="NSW">NSW</option>
+                            <option value="VIC">VIC</option>
+                            <option value="QLD">QLD</option>
+                            <option value="WA">WA</option>
+                            <option value="SA">SA</option>
+                            <option value="TAS">TAS</option>
+                            <option value="ACT">ACT</option>
+                            <option value="NT">NT</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1 block">Postcode *</label>
+                    <input type="text" name="primary_zip" placeholder="3000" pattern="[0-9]{4}"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                    <button type="button" onclick="document.getElementById('addMemberModal').classList.add('hidden')"
+                        class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors font-medium">Cancel</button>
+                    <button type="submit" 
+                        class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                        Save Member
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+    <script>
+        const API_URL = '';
+        let allMembers = [];
+        let filteredMembers = [];
+        let currentPage = 1;
+        const itemsPerPage = 20;
+        let sortField = 'id';
+        let sortAsc = true;
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', loadMembers);
+
+        // Event Listeners
+        document.getElementById('searchInput').addEventListener('input', filterMembers);
+        document.getElementById('statusFilter').addEventListener('change', filterMembers);
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+
+            toast.className = `${bgClass} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-10 opacity-0 flex items-center gap-2`;
+            toast.innerHTML = `<span class="font-medium">${message}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 50);
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        async function loadMembers() {
+            try {
+                const response = await fetch(`${API_URL}/members`);
+                allMembers = await response.json();
+
+                // Process members to add helper fields for sorting/filtering
+                allMembers = allMembers.map(m => {
+                    const lastCheck = m.check_results.length > 0 ? m.check_results[m.check_results.length - 1] : null;
+                    let status = 'Unchecked';
+                    let electorate = '-';
+
+                    if (lastCheck) {
+                        if (lastCheck.result === 'Pass') {
+                            status = 'Verified';
+                            electorate = lastCheck.federal_division || '-';
+                        } else if (lastCheck.result === 'Captcha') {
+                            status = 'Captcha';
+                        } else {
+                            status = 'Fail'; // Group all failures
+                        }
+                    }
+
+                    return { ...m, _status: status, _electorate: electorate, _fullName: `${m.first_name} ${m.middle_name || ''} ${m.last_name}`.toLowerCase() };
+                });
+
+                filterMembers();
+            } catch (error) {
+                console.error('Error loading members:', error);
+                showToast('Failed to load members', 'error');
+            }
+        }
+
+        function filterMembers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredMembers = allMembers.filter(member => {
+                const matchesSearch = member._fullName.includes(searchTerm) ||
+                    member.primary_city.toLowerCase().includes(searchTerm) ||
+                    String(member.nationbuilder_id).includes(searchTerm);
+
+                const matchesStatus = statusFilter === 'all' || member._status === statusFilter;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            // Update Stats
+            const verified = allMembers.filter(m => m._status === 'Verified').length;
+            const pending = allMembers.filter(m => m._status !== 'Verified').length; // Simplified pending logic
+
+            document.getElementById('totalMembers').innerText = allMembers.length;
+            document.getElementById('verifiedCount').innerText = verified;
+            document.getElementById('pendingCount').innerText = pending;
+
+            // Reset to page 1 on filter change
+            currentPage = 1;
+            renderTable();
+        }
+
+        function sortBy(field) {
+            if (sortField === field) {
+                sortAsc = !sortAsc;
+            } else {
+                sortField = field;
+                sortAsc = true;
+            }
+            renderTable();
+        }
+
+        function renderTable() {
+            // Sort
+            filteredMembers.sort((a, b) => {
+                let valA, valB;
+                if (sortField === 'name') { valA = a._fullName; valB = b._fullName; }
+                else if (sortField === 'id') { valA = a.nationbuilder_id; valB = b.nationbuilder_id; }
+                else if (sortField === 'status') { valA = a._status; valB = b._status; }
+                else { valA = a.id; valB = b.id; } // Default
+
+                if (valA < valB) return sortAsc ? -1 : 1;
+                if (valA > valB) return sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            // Paginate
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageItems = filteredMembers.slice(start, end);
+
+            const tbody = document.getElementById('membersTableBody');
+            tbody.innerHTML = '';
+
+            pageItems.forEach(member => {
+                let statusHtml = '';
+                if (member._status === 'Verified') statusHtml = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Verified</span>';
+                else if (member._status === 'Captcha') statusHtml = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Captcha</span>';
+                else if (member._status === 'Fail') statusHtml = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Fail</span>';
+                else statusHtml = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Unchecked</span>';
+
+                const row = `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 font-medium text-slate-900">${member.first_name} ${member.middle_name ? member.middle_name + ' ' : ''}${member.last_name}</td>
+                        <td class="px-6 py-4 text-slate-500">${member.primary_address1}, ${member.primary_city}</td>
+                        <td class="px-6 py-4 text-slate-500">${member.nationbuilder_id}</td>
+                        <td class="px-6 py-4">${statusHtml}</td>
+                        <td class="px-6 py-4 text-slate-500">${member._electorate}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="checkMember(${member.id})" class="text-blue-600 hover:text-blue-900 font-medium text-sm">Check Now</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            // Update Pagination Controls
+            document.getElementById('showingStats').innerText = `Showing ${filteredMembers.length > 0 ? start + 1 : 0}-${Math.min(end, filteredMembers.length)} of ${filteredMembers.length}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = end >= filteredMembers.length;
+
+            const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+            document.getElementById('pageNumbers').innerHTML = `Page ${currentPage} of ${totalPages || 1}`;
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderTable();
+        }
+
+        async function checkMember(id) {
+            try {
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = 'Queuing...';
+                btn.disabled = true;
+
+                const res = await fetch(`${API_URL}/members/${id}/check`, { method: 'POST' });
+                if (res.ok) {
+                    showToast('Check queued');
+                    btn.innerText = 'Queued';
+                } else {
+                    throw new Error('Failed');
+                }
+
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    // Don't reload entire list, just update this item if we were smarter, but for now...
+                    // Actually, don't reload list to preserve pagination state. 
+                    // Maybe just mark as 'Queued' visually?
+                }, 2000);
+            } catch (error) {
+                showToast('Failed to queue', 'error');
+                if (event.target) event.target.disabled = false;
+            }
+        }
+
+        async function retryCaptchas() {
+            try {
+                // We need to check all members, not just filtered ones, or maybe just filtered ones?
+                // Let's do all members to be safe as per original intent, or filtered if user wants to filter by Captcha first.
+                // The original implementation checked ALL members. Let's stick to that or maybe better: check filtered members that have status Captcha.
+                // Actually, let's just check ALL members with Captcha status to be most useful.
+
+                let count = 0;
+                for (const member of allMembers) {
+                    if (member._status === 'Captcha') {
+                        await fetch(`${API_URL}/members/${member.id}/check`, { method: 'POST' });
+                        count++;
+                    }
+                }
+
+                if (count > 0) {
+                    showToast(`Queued ${count} captcha retries`);
+                } else {
+                    showToast('No captcha failures found');
+                }
+            } catch (error) {
+                showToast('Failed to retry captchas', 'error');
+            }
+        }
+
+        async function checkAllVisible() {
+            const visibleIds = filteredMembers.map(m => m.id); // Check ALL filtered, not just current page? Or just visible? User said "Check All Visible" but usually means "Check All Filtered Results"
+            // Let's do all filtered results to be more useful
+
+            if (visibleIds.length === 0) return;
+            if (!confirm(`Queue checks for ${visibleIds.length} members?`)) return;
+
+            let count = 0;
+            for (const id of visibleIds) {
+                // In a real app, we'd have a bulk endpoint. Here we loop.
+                try {
+                    await fetch(`${API_URL}/members/${id}/check`, { method: 'POST' });
+                    count++;
+                } catch (e) { console.error(e); }
+            }
+            showToast(`Queued ${count} checks`);
+        }
+
+        function exportCSV() {
+            const headers = ['First Name', 'Middle Name', 'Last Name', 'NB ID', 'Address', 'Suburb', 'State', 'Postcode', 'Status', 'Electorate'];
+            const csvContent = [
+                headers.join(','),
+                ...filteredMembers.map(m => [
+                    m.first_name,
+                    m.middle_name || '',
+                    m.last_name,
+                    m.nationbuilder_id,
+                    `"${m.primary_address1}"`,
+                    m.primary_city,
+                    m.primary_state,
+                    m.primary_zip,
+                    m._status,
+                    m._electorate
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'aec_crm_export.csv';
+            link.click();
+        }
+
+        // ... (Upload and Add Member logic remains same, just ensure they call loadMembers() on success)
+
+        async function uploadCSV() {
+            // ... existing upload logic ...
+            // make sure to call loadMembers() at end
+            const fileInput = document.getElementById('csvInput');
+            if (fileInput.files.length === 0) {
+                showToast('Please select a file first', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = 'Importing...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/members/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showToast(result.message);
+                    document.getElementById('importModal').classList.add('hidden');
+                    loadMembers();
+                } else {
+                    showToast('Import failed', 'error');
+                }
+            } catch (error) {
+                showToast('Upload failed', 'error');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                fileInput.value = '';
+                document.getElementById('fileName').innerText = 'No file selected';
+            }
+        }
+
+        // ... Add Member Form Listener ...
+        document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            data.nationbuilder_id = parseInt(data.nationbuilder_id);
+
+            try {
+                const response = await fetch(`${API_URL}/members`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    showToast('Member added successfully');
+                    document.getElementById('addMemberModal').classList.add('hidden');
+                    e.target.reset();
+                    loadMembers();
+                } else {
+                    const err = await response.json();
+                    showToast('Error: ' + err.detail, 'error');
+                }
+            } catch (error) {
+                showToast('Failed to add member', 'error');
+            }
+        });
+
+        // File Input Listener
+        document.getElementById('csvInput').addEventListener('change', function (e) {
+            if (e.target.files.length > 0) {
+                document.getElementById('fileName').innerText = e.target.files[0].name;
+            }
+        });
+
+
+        // Auto refresh every 10 seconds to show progress
+        setInterval(loadMembers, 10000);
+    </script>
+</body>
+
+</html>
