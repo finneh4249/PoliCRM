@@ -137,7 +137,21 @@ dmypy.json
 *.csv
 # Ignore generated markdown documentation
 *.md
+!CLAUDE.md
+!DESIGN.md
+!PRODUCT.md
+!ROADMAP.md
 !README.md
 # Ignore internal directories
 .agents/
 .impeccable/
+
+# SQLite local databases and journals
+crm.db
+crm.db-journal
+backend-rs/crm.db
+backend-rs/crm.db-journal
+
+# Vite cache
+frontend/.vite/
+.vite/
