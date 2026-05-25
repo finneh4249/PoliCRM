@@ -1,194 +1,161 @@
-import { $idToken } from "../stores/authStore";
+/**
+ * PoliCRM API Client
+ *
+ * Backend port is dynamic (8080–8100). Set VITE_API_BASE_URL in your .env to
+ * point at the correct port. Defaults to http://localhost:8080.
+ *
+ * Example .env entry:
+ *   VITE_API_BASE_URL=http://localhost:8080
+ */
 
-const API_BASE = "";
+const API_BASE =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
+  "http://localhost:8080";
 
-// Helper to get auth headers
-async function getHeaders(): Promise<HeadersInit> {
-  const token = $idToken.get();
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
+/* ─── Types ──────────────────────────────────────────────────────────────── */
+export interface ApiError {
+  status: number;
+  message: string;
 }
 
-// Generic API call wrapper
-async function apiCall<T>(
-  endpoint: string,
-  options: RequestInit = {},
+export interface Person {
+  id: string;
+  given_name: string;
+  surname: string;
+  email?: string; // encrypted at rest — may be absent
+  primary_state?: string;
+  primary_zip?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PersonsPage {
+  data: Person[];
+  next_cursor?: string;
+  total?: number;
+}
+
+export interface ImportJob {
+  id: string;
+  source: "csv" | "nationbuilder";
+  status: "pending" | "running" | "complete" | "failed";
+  records_total?: number;
+  records_processed?: number;
+  records_skipped?: number;
+  filename?: string;
+  started_at?: string;
+  completed_at?: string;
+  error?: string;
+}
+
+/* ─── Core fetch wrapper ─────────────────────────────────────────────────── */
+async function request<T>(
+  path: string,
+  options?: RequestInit,
 ): Promise<T> {
-  const headers = await getHeaders();
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const url = `${API_BASE}${path}`;
+  const res = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+      ...options?.headers,
+    },
     ...options,
-    headers: { ...headers, ...options.headers },
   });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || `API error: ${response.status}`);
+  if (!res.ok) {
+    let message = `HTTP ${res.status}`;
+    try {
+      const body = await res.json();
+      message = body?.message ?? body?.error ?? message;
+    } catch {
+      // ignore JSON parse errors
+    }
+    throw { status: res.status, message } satisfies ApiError;
   }
 
-  return response.json();
+  // 204 No Content
+  if (res.status === 204) return undefined as unknown as T;
+
+  return res.json() as Promise<T>;
 }
 
-// Members API
-export const membersApi = {
-  getAll: async (params?: {
-    search?: string;
-    status?: string[];
+/* ─── Persons API ────────────────────────────────────────────────────────── */
+export const personsApi = {
+  list(params?: {
+    cursor?: string;
     state?: string;
-    tags?: number[];
-    tag_operator?: "AND" | "OR";
-    skip?: number;
     limit?: number;
-    sort_by?: string;
-    sort_order?: "asc" | "desc";
-  }) => {
-    const queryParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          if (Array.isArray(value)) {
-            value.forEach((v) => queryParams.append(key, String(v)));
-          } else {
-            queryParams.append(key, String(value));
-          }
-        }
-      });
-    }
-    // Backend returns array directly
-    return apiCall<any[]>(`/members?${queryParams}`);
+    search?: string;
+  }): Promise<PersonsPage> {
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.state) q.set("state", params.state);
+    if (params?.limit) q.set("limit", String(params.limit));
+    if (params?.search) q.set("search", params.search);
+    const qs = q.toString();
+    return request<PersonsPage>(`/persons${qs ? `?${qs}` : ""}`);
   },
 
-  getById: (id: number) => apiCall<any>(`/members/${id}`),
-
-  create: (data: any) =>
-    apiCall<any>("/members", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-
-  update: (id: number, data: any) =>
-    apiCall<any>(`/members/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }),
-
-  delete: (id: number) =>
-    apiCall<void>(`/members/${id}`, {
-      method: "DELETE",
-    }),
-
-  checkSelected: (ids: number[]) =>
-    apiCall<any>("/members/check-selected", {
-      method: "POST",
-      body: JSON.stringify({ member_ids: ids }),
-    }),
-
-  bulkUpdateStatus: (ids: number[], status: string) =>
-    apiCall<any>("/members/bulk-update-status", {
-      method: "POST",
-      body: JSON.stringify({ member_ids: ids, status }),
-    }),
-
-  resign: (id: number) =>
-    apiCall<any>(`/members/${id}/resign`, {
-      method: "POST",
-    }),
-
-  exportCSV: (params: any) => {
-    const queryParams = new URLSearchParams(params);
-    window.location.href = `/members/export?${queryParams}`;
+  get(id: string): Promise<Person> {
+    return request<Person>(`/persons/${id}`);
   },
 };
 
-// Tags API
-export const tagsApi = {
-  getAll: () => apiCall<any[]>("/tags"),
-
-  create: (data: { name: string; color: string; description?: string }) =>
-    apiCall<any>("/tags", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-
-  update: (
-    id: number,
-    data: Partial<{ name: string; color: string; description?: string }>,
-  ) =>
-    apiCall<any>(`/tags/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }),
-
-  delete: (id: number) =>
-    apiCall<void>(`/tags/${id}`, {
-      method: "DELETE",
-    }),
-
-  addToMember: (memberId: number, tagId: number) =>
-    apiCall<any>(`/members/${memberId}/tags`, {
-      method: "POST",
-      body: JSON.stringify({ tag_id: tagId }),
-    }),
-
-  removeFromMember: (memberId: number, tagId: number) =>
-    apiCall<void>(`/members/${memberId}/tags/${tagId}`, {
-      method: "DELETE",
-    }),
-};
-
-// Stats API
-export const statsApi = {
-  getDashboard: () => apiCall<any>("/stats/dashboard"),
-
-  getByState: () => apiCall<any>("/stats/by-state"),
-
-  getByElectorate: () => apiCall<any>("/stats/by-electorate"),
-};
-
-// Analytics API
-export const analyticsApi = {
-  getSummary: () => apiCall<any>("/analytics/summary"),
-
-  getGrowthTrend: (days: number = 90) =>
-    apiCall<any>(`/analytics/growth-trend?days=${days}`),
-
-  getElectorateBreakdown: () => apiCall<any>("/analytics/electorate-breakdown"),
-};
-
-// System API
-export const systemApi = {
-  getQueueStatus: () => apiCall<any>("/system/queue"),
-};
-
-// Import/Export API
+/* ─── Import / Jobs API ──────────────────────────────────────────────────── */
 export const importApi = {
-  uploadCSV: async (file: File, mappings: any) => {
-    const token = $idToken.get();
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("mappings", JSON.stringify(mappings));
+  list(): Promise<ImportJob[]> {
+    return request<ImportJob[]>("/import/jobs");
+  },
 
-    const response = await fetch("/members/import", {
+  get(id: string): Promise<ImportJob> {
+    return request<ImportJob>(`/import/jobs/${id}`);
+  },
+
+  uploadCsv(file: File): Promise<ImportJob> {
+    const form = new FormData();
+    form.append("file", file);
+    return request<ImportJob>("/import/csv", {
       method: "POST",
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: formData,
+      body: form,
+      headers: {}, // Let browser set multipart boundary
     });
+  },
 
-    if (!response.ok) {
-      throw new Error("Import failed");
-    }
-
-    return response.json();
+  startNationBuilder(params: { api_key: string; slug: string }): Promise<ImportJob> {
+    return request<ImportJob>("/import/nationbuilder", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
   },
 };
 
-export default {
-  members: membersApi,
-  tags: tagsApi,
-  stats: statsApi,
-  analytics: analyticsApi,
-  import: importApi,
+/* ─── Analytics API ─────────────────────────────────────────────────────── */
+export const analyticsApi = {
+  electorateCounts(): Promise<{
+    verified: Record<string, number>;
+    projected: Record<string, number>;
+    metadata?: { verified_max: number; projected_max: number };
+  }> {
+    return request("/analytics/electorate-counts");
+  },
+
+  growth(): Promise<Record<string, number>> {
+    return request("/analytics/growth");
+  },
+
+  geographic(): Promise<{
+    by_state: Record<string, number>;
+    by_division: Record<string, number>;
+  }> {
+    return request("/analytics/geographic");
+  },
+
+  summary(): Promise<{
+    total_persons: number;
+    states_covered: number;
+    imports_total: number;
+    last_import_at?: string;
+  }> {
+    return request("/analytics/summary");
+  },
 };
