@@ -85,11 +85,25 @@ export default function Dashboard() {
   const [phaseOpen, setPhaseOpen] = useState(false);
 
   useEffect(() => {
-    analyticsApi.summary().then(setSummary).catch(() => {});
-    personsApi.list({ limit: 8 }).then((p) => setMembers(
-      (p.data ?? []).map((m) => ({ ...m, membership_status: "active" as MembershipStatus }))
-    )).catch(() => {});
-    importApi.list().then(setImports).catch(() => {});
+    analyticsApi.summary()
+      .then(setSummary)
+      .catch((err: unknown) => {
+        console.error("analyticsApi.summary failed:", (err instanceof Error ? err.message : err));
+      });
+    personsApi.list({ limit: 8 })
+      .then((p) => setMembers(
+        (p.data ?? []).map((m) => ({ ...m, membership_status: "active" as MembershipStatus }))
+      ))
+      .catch((err: unknown) => {
+        console.error("personsApi.list failed:", (err instanceof Error ? err.message : err));
+        setMembers([]);
+      });
+    importApi.list()
+      .then(setImports)
+      .catch((err: unknown) => {
+        console.error("importApi.list failed:", (err instanceof Error ? err.message : err));
+        setImports([]);
+      });
   }, []);
 
   const doneCount = PHASE1_ITEMS.filter((i) => i.done).length;

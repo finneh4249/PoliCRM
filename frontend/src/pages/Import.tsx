@@ -73,7 +73,8 @@ function NationBuilderForm({ onJobStarted }: { onJobStarted: (j: ImportJob) => v
       onJobStarted(job);
       setSlug("");
       setApiKey("");
-    } catch {
+    } catch (err: unknown) {
+      console.error("importApi.startNationBuilder failed:", (err instanceof Error ? err.message : err));
       setError("Could not connect to backend. Is the server running?");
     } finally {
       setSubmitting(false);

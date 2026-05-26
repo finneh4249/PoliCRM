@@ -85,6 +85,17 @@ export function LandingPage() {
             (e.currentTarget as HTMLAnchorElement).style.borderColor =
               "oklch(52% 0.22 260 / 0.35)";
           }}
+          onFocus={(e) => {
+            (e.currentTarget as HTMLAnchorElement).style.background =
+              "oklch(52% 0.22 260 / 0.12)";
+            (e.currentTarget as HTMLAnchorElement).style.borderColor =
+              "oklch(52% 0.22 260 / 0.6)";
+          }}
+          onBlur={(e) => {
+            (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
+            (e.currentTarget as HTMLAnchorElement).style.borderColor =
+              "oklch(52% 0.22 260 / 0.35)";
+          }}
         >
           Sign In
         </Link>

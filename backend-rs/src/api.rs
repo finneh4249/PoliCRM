@@ -394,7 +394,7 @@ async fn import_nationbuilder(
         )
         .bind(identity_id)
         .bind(person_id)
-        .bind(provider_id)
+        .bind(&provider_id)
         .execute(&mut *tx)
         .await;
 
