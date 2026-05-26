@@ -1,240 +1,194 @@
-import { useStore } from "@nanostores/react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { $stats, fetchStats } from "../stores/statsStore";
-import { useEffect } from "react";
-import { signOut } from "firebase/auth";
-import { auth } from "../utils/firebase";
-import { updateFilters } from "../stores/membersStore";
 import {
   LayoutDashboard,
-  Map,
-  Cpu,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  XCircle,
-  RefreshCw,
   Users,
+  Upload,
+  Map,
   LogOut,
-  Vote,
 } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
+/* ─── Nav items ──────────────────────────────────────────────────────────── */
+const NAV_ITEMS = [
+  { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/app/members",   icon: Users,           label: "Members"   },
+  { to: "/app/import",    icon: Upload,          label: "Import"    },
+  { to: "/app/war-room",  icon: Map,             label: "War Room"  },
+] as const;
+
+/* ─── Role labels ────────────────────────────────────────────────────────── */
+const ROLE_LABELS: Record<string, string> = {
+  sys_admin:        "System Admin",
+  state_secretary:  "State Secretary",
+  branch_organiser: "Branch Organiser",
+  volunteer:        "Volunteer",
+  read_only:        "Read Only",
+};
+
+/* ─── Component ──────────────────────────────────────────────────────────── */
 export function Sidebar() {
-  const stats = useStore($stats);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchStats();
-    // Refresh stats every 30 seconds
-    const interval = setInterval(fetchStats, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await logout();
       navigate("/login");
-    } catch (error) {
-      console.error("Sign out failed:", error);
+    } catch (err) {
+      console.error("Logout failed:", err);
+      // Stay on current page; user can retry
     }
   };
 
-  const handleFilterClick = (status: string) => {
-    // Reset other filters and set status
-    updateFilters({
-      search: "",
-      status: [status],
-      state: "all",
-      tags: [],
-      tagOperator: "AND",
-    });
-    navigate("/dashboard");
-  };
-
-  const handleResetFilters = () => {
-    updateFilters({
-      search: "",
-      status: [],
-      state: "all",
-      tags: [],
-      tagOperator: "AND",
-    });
-  };
-
   return (
-    <div className="fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 text-white shadow-2xl z-40 flex flex-col">
-      {/* Logo/Brand */}
-      <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-        <div className="relative w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
-          <Vote className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-white">PoliCRM</h1>
-          <p className="text-slate-400 text-xs mt-0.5 font-medium">
-            Electoral Operations Console
-          </p>
+    <aside
+      style={{
+        width: 240,
+        flexShrink: 0,
+        background: "var(--navy)",
+        borderRight: "1px solid var(--navy-border)",
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        position: "sticky",
+        top: 0,
+      }}
+    >
+      {/* Wordmark */}
+      <div
+        style={{
+          padding: "22px 20px 18px",
+          borderBottom: "1px solid var(--navy-border)",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontWeight: 800,
+            fontSize: 17,
+            color: "oklch(98.5% 0.006 240)",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          PoliCRM
+        </span>
+        <div
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            letterSpacing: "0.07em",
+            textTransform: "uppercase",
+            color: "oklch(55% 0.015 240)",
+            marginTop: 2,
+          }}
+        >
+          Operations Console
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-        <NavLink
-          to="/dashboard"
-          end
-          onClick={handleResetFilters}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              isActive
-                ? "bg-slate-800 text-white font-semibold shadow-sm border border-slate-700"
-                : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
-            }`
-          }
-        >
-          <LayoutDashboard className="w-4 h-4" />
-          <span>Dashboard</span>
-        </NavLink>
+      <nav style={{ flex: 1, padding: "12px 12px 0" }}>
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+          {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
+            <li key={to}>
+              <NavLink
+                to={to}
+                className={({ isActive }) =>
+                  `nav-item${isActive ? " active" : ""}`
+                }
+                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}
+              >
+                <Icon size={16} strokeWidth={2} style={{ flexShrink: 0 }} />
+                <span style={{ flex: 1 }}>{label}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
 
-        <NavLink
-          to="/war-room"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              isActive
-                ? "bg-slate-800 text-white font-semibold shadow-sm border border-slate-700"
-                : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
-            }`
-          }
-        >
-          <Map className="w-4 h-4" />
-          <span>War Room</span>
-        </NavLink>
-
-        <NavLink
-          to="/queue"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              isActive
-                ? "bg-slate-800 text-white font-semibold shadow-sm border border-slate-700"
-                : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
-            }`
-          }
-        >
-          <Cpu className="w-4 h-4" />
-          <span>Background Queue</span>
-        </NavLink>
-
-        <div className="border-t border-slate-800 my-4"></div>
-
-        <div className="px-4 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-          Filter by Status
-        </div>
-
-        <button
-          onClick={() => handleFilterClick("Verified")}
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all"
-        >
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>Verified</span>
-          <span className="ml-auto bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/20 font-semibold">
-            {stats.verified}
-          </span>
-        </button>
-
-        <button
-          onClick={() => handleFilterClick("Unchecked")}
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all"
-        >
-          <Clock className="w-4 h-4 text-amber-400" />
-          <span>Pending Check</span>
-          <span className="ml-auto bg-amber-500/10 text-amber-400 text-xs px-2 py-0.5 rounded-full border border-amber-500/20 font-semibold">
-            {stats.unchecked}
-          </span>
-        </button>
-
-        <button
-          onClick={() => handleFilterClick("Partial")}
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all"
-        >
-          <AlertTriangle className="w-4 h-4 text-orange-400" />
-          <span>Partial Matches</span>
-          <span className="ml-auto bg-orange-500/10 text-orange-400 text-xs px-2 py-0.5 rounded-full border border-orange-500/20 font-semibold">
-            {stats.partial}
-          </span>
-        </button>
-
-        <button
-          onClick={() => handleFilterClick("Fail")}
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all"
-        >
-          <XCircle className="w-4 h-4 text-rose-400" />
-          <span>Failed Checks</span>
-          <span className="ml-auto bg-rose-500/10 text-rose-400 text-xs px-2 py-0.5 rounded-full border border-rose-500/20 font-semibold">
-            {stats.failed}
-          </span>
-        </button>
-
-        <button
-          onClick={() => handleFilterClick("Captcha")}
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all"
-        >
-          <RefreshCw className="w-4 h-4 text-cyan-400" />
-          <span>Captcha Issues</span>
-          <span className="ml-auto bg-cyan-500/10 text-cyan-400 text-xs px-2 py-0.5 rounded-full border border-cyan-500/20 font-semibold">
-            {stats.captcha}
-          </span>
-        </button>
-
-        <button
-          onClick={() => handleFilterClick("Duplicate")}
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all"
-        >
-          <Users className="w-4 h-4 text-purple-400" />
-          <span>Duplicates</span>
-          <span className="ml-auto bg-purple-500/10 text-purple-400 text-xs px-2 py-0.5 rounded-full border border-purple-500/20 font-semibold">
-            {stats.duplicate}
-          </span>
-        </button>
-
-        <div className="border-t border-slate-800 my-4"></div>
-
-        {/* User Info */}
-        <div className="px-4 py-3 mt-auto bg-slate-950/40 rounded-xl border border-slate-800/40 mx-2">
-          <div className="flex items-center justify-between gap-2 overflow-hidden">
-            <div className="truncate flex-1">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Operator</p>
-              <p className="text-xs text-slate-200 truncate mt-0.5 font-medium" title={auth.currentUser?.email || ""}>
-                {auth.currentUser?.email || "system@policrm.org"}
-              </p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-1.5 rounded-md hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-              title="Logout"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+        {/* Section divider */}
+        <div
+          style={{
+            margin: "16px 0 12px",
+            height: 1,
+            background: "var(--navy-border)",
+          }}
+        />
       </nav>
 
-      {/* Footer Stats */}
-      <div className="p-4 border-t border-slate-800 bg-slate-950/50">
-        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Metrics Overview</div>
-        <div className="grid grid-cols-2 gap-2 text-center">
-          <div className="bg-slate-800/50 border border-slate-800 rounded-lg p-2">
-            <div className="text-lg font-bold text-slate-100">{stats.total}</div>
-            <div className="text-[9px] font-semibold text-slate-400 uppercase">Total</div>
+      {/* User row */}
+      <div
+        style={{
+          padding: "12px",
+          borderTop: "1px solid var(--navy-border)",
+        }}
+      >
+        <button
+          onClick={handleLogout}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "8px 12px",
+            background: "transparent",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+          className="nav-item"
+          title="Sign out"
+          aria-label="Sign out"
+        >
+          {/* Avatar initial */}
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              background: "oklch(52% 0.22 260 / 0.25)",
+              border: "1px solid oklch(52% 0.22 260 / 0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 11,
+              fontWeight: 700,
+              color: "oklch(72% 0.18 260)",
+              flexShrink: 0,
+            }}
+          >
+            {user?.name?.[0] ?? "U"}
           </div>
-          <div className="bg-slate-800/50 border border-slate-800 rounded-lg p-2">
-            <div className="text-lg font-bold text-emerald-400">
-              {stats.total > 0
-                ? Math.round((stats.verified / stats.total) * 100)
-                : 0}
-              %
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 12.5,
+                fontWeight: 600,
+                color: "oklch(90% 0.008 240)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {user?.name ?? "User"}
             </div>
-            <div className="text-[9px] font-semibold text-slate-400 uppercase">Verified</div>
+            <div
+              style={{
+                fontSize: 10.5,
+                color: "oklch(55% 0.015 240)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {ROLE_LABELS[user?.role ?? ""] ?? user?.role}
+            </div>
           </div>
-        </div>
+
+          <LogOut size={14} style={{ flexShrink: 0, color: "oklch(50% 0.015 240)" }} />
+        </button>
       </div>
-    </div>
+    </aside>
   );
 }

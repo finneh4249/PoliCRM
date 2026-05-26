@@ -10,34 +10,65 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import "leaflet/dist/leaflet.css";
-import {
-  ArrowLeft,
-  Map as MapIcon,
-  BarChart3,
-  TrendingUp,
-  Users,
-  CheckCircle2,
-  Target,
-} from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Link } from "react-router-dom";
+import { Map as MapIcon, BarChart3, Users, TrendingUp, Target } from "lucide-react";
+import { analyticsApi } from "../services/api";
 
-interface ElectorateCounts {
-  [key: string]: number;
+/* ─── Types ──────────────────────────────────────────────────────────────── */
+interface ElectorateCounts { [key: string]: number; }
+
+interface GeoJsonFeature {
+  properties: {
+    electorateName?: string;
+    elect_div?: string;
+    Name?: string;
+    NAME?: string;
+  };
 }
 
-interface GrowthData {
-  [key: string]: number;
+interface LeafletLayer {
+  bindTooltip: (content: string, options?: { sticky?: boolean }) => void;
+  on: (eventHandlers: {
+    mouseover: (e: LeafletEvent) => void;
+    mouseout: (e: LeafletEvent) => void;
+  }) => void;
 }
 
-interface GeographicData {
-  by_state: { [key: string]: number };
-  by_division: { [key: string]: number };
+interface LeafletEvent {
+  target: {
+    setStyle: (style: {
+      weight: number;
+      color: string;
+      dashArray: string;
+      fillOpacity: number;
+    }) => void;
+    bringToFront: () => void;
+  };
 }
 
+/* ─── Colours ────────────────────────────────────────────────────────────── */
+function getColor(count: number, mode: "verified" | "projected", max: number): string {
+  const t = (pct: number) => max * pct;
+  if (mode === "verified") {
+    return count >= t(1)   ? "#006d2c"
+         : count >= t(0.6) ? "#31a354"
+         : count >= t(0.35)? "#74c476"
+         : count >= t(0.2) ? "#a1d99b"
+         : count >= t(0.1) ? "#c7e9c0"
+         : count > 0       ? "#f7fcb9"
+         :                   "#e8eaed";
+  }
+  return count >= t(1)   ? "#800026"
+       : count >= t(0.6) ? "#BD0026"
+       : count >= t(0.35)? "#E31A1C"
+       : count >= t(0.2) ? "#FC4E2A"
+       : count >= t(0.1) ? "#FD8D3C"
+       : count > 0       ? "#FED976"
+       :                   "#e8eaed";
+}
+
+/* ─── Component ──────────────────────────────────────────────────────────── */
 export function WarRoom() {
   const [geoJsonData, setGeoJsonData] = useState(null);
   const [counts, setCounts] = useState<{
@@ -45,319 +76,233 @@ export function WarRoom() {
     projected: ElectorateCounts;
     metadata?: { verified_max: number; projected_max: number };
   }>({ verified: {}, projected: {} });
-  const [growthData, setGrowthData] = useState<GrowthData>({});
-  const [geoData, setGeoData] = useState<GeographicData>({
-    by_state: {},
-    by_division: {},
-  });
+  const [growthData, setGrowthData] = useState<Record<string, number>>({});
+  const [geoData, setGeoData] = useState<{
+    by_state: Record<string, number>;
+    by_division: Record<string, number>;
+  }>({ by_state: {}, by_division: {} });
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<
-    "verified" | "projected" | "combined"
-  >("combined");
-  const [activeView, setActiveView] = useState<"map" | "dashboard">("map");
+  const [viewMode, setViewMode] = useState<"verified" | "projected" | "combined">("combined");
+  const [activeView, setActiveView] = useState<"map" | "analytics">("map");
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAll = async () => {
       try {
-        // Fetch GeoJSON
-        const geoRes = await fetch("/static/geojson/AUS_ELB_region.json");
-        const geoData = await geoRes.json();
-        setGeoJsonData(geoData);
+        const [geoJson, electorates, growth, geo] = await Promise.allSettled([
+          fetch("/static/geojson/AUS_ELB_region.json").then((r) => r.json()),
+          analyticsApi.electorateCounts(),
+          analyticsApi.growth(),
+          analyticsApi.geographic(),
+        ]);
 
-        // Fetch Counts
-        const countsRes = await fetch("/analytics/electorate-counts");
-        const countsData = await countsRes.json();
-        setCounts(countsData);
-
-        // Fetch Growth Data
-        const growthRes = await fetch("/analytics/growth");
-        const growthData = await growthRes.json();
-        setGrowthData(growthData);
-
-        // Fetch Geographic Data
-        const geoRes2 = await fetch("/analytics/geographic");
-        const geoData2 = await geoRes2.json();
-        setGeoData(geoData2);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        if (geoJson.status === "fulfilled")      setGeoJsonData(geoJson.value);
+        else console.error("GeoJSON fetch failed:", geoJson.reason);
+        if (electorates.status === "fulfilled")  setCounts(electorates.value);
+        else console.error("analyticsApi.electorateCounts failed:", electorates.reason);
+        if (growth.status === "fulfilled")       setGrowthData(growth.value);
+        else console.error("analyticsApi.growth failed:", growth.reason);
+        if (geo.status === "fulfilled")          setGeoData(geo.value);
+        else console.error("analyticsApi.geographic failed:", geo.reason);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchData();
+    fetchAll();
   }, []);
 
-  const getColor = (count: number, mode: "verified" | "projected") => {
-    // Dynamic thresholds based on actual data max
-    const maxCount =
-      mode === "verified"
-        ? counts.metadata?.verified_max || 100
-        : counts.metadata?.projected_max || 100;
-
-    // Percentage-based thresholds
-    const t100 = maxCount; // 100% (darkest)
-    const t60 = maxCount * 0.6; // 60%
-    const t35 = maxCount * 0.35; // 35%
-    const t20 = maxCount * 0.2; // 20%
-    const t10 = maxCount * 0.1; // 10%
-
-    if (mode === "verified") {
-      // Green Scale - Dynamic thresholds
-      return count >= t100
-        ? "#006d2c"
-        : count >= t60
-          ? "#31a354"
-          : count >= t35
-            ? "#74c476"
-            : count >= t20
-              ? "#a1d99b"
-              : count >= t10
-                ? "#c7e9c0"
-                : count > 0
-                  ? "#f7fcb9"
-                  : "#f7f7f7"; // Greyish for 0
-    } else {
-      // Yellow/Orange Scale for Projected - Dynamic thresholds
-      return count >= t100
-        ? "#800026"
-        : count >= t60
-          ? "#BD0026"
-          : count >= t35
-            ? "#E31A1C"
-            : count >= t20
-              ? "#FC4E2A"
-              : count >= t10
-                ? "#FD8D3C"
-                : count > 0
-                  ? "#FED976"
-                  : "#f7f7f7";
+  const style = (feature?: GeoJsonFeature) => {
+    if (!feature?.properties) {
+      return { fillColor: "#e8eaed", weight: 1, opacity: 1, color: "#334155", dashArray: "3", fillOpacity: 0.75 };
     }
-  };
-
-  const style = (feature: any) => {
     const name =
       feature.properties.electorateName ||
       feature.properties.elect_div ||
       feature.properties.Name ||
-      feature.properties.NAME;
-    const verifiedCount = counts.verified[name] || 0;
-    const projectedCount = counts.projected[name] || 0;
+      feature.properties.NAME ||
+      "";
+    const vCount = counts.verified[name] || 0;
+    const pCount = counts.projected[name] || 0;
+    const vMax = counts.metadata?.verified_max || 100;
+    const pMax = counts.metadata?.projected_max || 100;
 
-    let fillColor = "#f7f7f7";
-    let fillOpacity = 0.7;
+    let fillColor = "#e8eaed";
+    if (viewMode === "verified")  fillColor = getColor(vCount, "verified",  vMax);
+    else if (viewMode === "projected") fillColor = getColor(pCount, "projected", pMax);
+    else fillColor = vCount > 0 ? getColor(vCount, "verified", vMax) : getColor(pCount, "projected", pMax);
 
-    if (viewMode === "verified") {
-      fillColor = getColor(verifiedCount, "verified");
-    } else if (viewMode === "projected") {
-      fillColor = getColor(projectedCount, "projected");
-    } else {
-      // Combined View
-      if (verifiedCount > 0) {
-        fillColor = getColor(verifiedCount, "verified");
-      } else if (projectedCount > 0) {
-        fillColor = getColor(projectedCount, "projected");
-      }
-    }
-
-    return {
-      fillColor,
-      weight: 1,
-      opacity: 1,
-      color: "#444",
-      dashArray: "3",
-      fillOpacity,
-    };
+    return { fillColor, weight: 1, opacity: 1, color: "#334155", dashArray: "3", fillOpacity: 0.75 };
   };
 
-  const onEachFeature = (feature: any, layer: any) => {
+  const onEachFeature = (feature: GeoJsonFeature, layer: LeafletLayer) => {
+    if (!feature?.properties) return;
     const name =
       feature.properties.electorateName ||
       feature.properties.elect_div ||
       feature.properties.Name ||
-      feature.properties.NAME;
-    const verifiedCount = counts.verified[name] || 0;
-    const projectedCount = counts.projected[name] || 0;
+      feature.properties.NAME ||
+      "";
+    const v = counts.verified[name] || 0;
+    const p = counts.projected[name] || 0;
 
+    const escapedName = name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     layer.bindTooltip(
-      `
-            <div style="background: rgba(15, 23, 42, 0.95); padding: 12px; border-radius: 8px; border: 1px solid #475569;">
-                <div style="font-size: 16px; font-weight: bold; color: #f1f5f9; margin-bottom: 8px;">${name}</div>
-                <div style="color: #4ade80; margin-bottom: 4px;">✓ Verified: ${verifiedCount}</div>
-                <div style="color: #fbbf24; margin-bottom: 4px;">○ Projected: ${projectedCount}</div>
-                <div style="color: #94a3b8; font-size: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #475569;">
-                    Total: ${verifiedCount + projectedCount}
-                </div>
-            </div>
-        `,
-      {
-        sticky: true,
-        className: "custom-tooltip",
-      },
+      `<div style="background:rgba(15,23,42,0.96);padding:12px;border-radius:8px;border:1px solid #334155;font-family:Inter,sans-serif">
+        <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:8px">${escapedName}</div>
+        <div style="color:#4ade80;margin-bottom:3px;font-size:13px">Members: ${v}</div>
+        <div style="color:#fbbf24;font-size:13px">Projected: ${p}</div>
+        <div style="color:#64748b;font-size:11px;margin-top:8px;border-top:1px solid #334155;padding-top:6px">Total: ${v + p}</div>
+      </div>`,
+      { sticky: true },
     );
 
     layer.on({
-      mouseover: (e: any) => {
-        const layer = e.target;
-        layer.setStyle({
-          weight: 3,
-          color: "#fff",
-          dashArray: "",
-          fillOpacity: 0.9,
-        });
-        layer.bringToFront();
+      mouseover: (e: LeafletEvent) => {
+        e.target.setStyle({ weight: 2.5, color: "#f8fafc", dashArray: "", fillOpacity: 0.9 });
+        e.target.bringToFront();
       },
-      mouseout: (e: any) => {
-        const layer = e.target;
-        layer.setStyle({
-          weight: 1,
-          color: "#444",
-          dashArray: "3",
-          fillOpacity: 0.7,
-        });
+      mouseout: (e: LeafletEvent) => {
+        e.target.setStyle({ weight: 1, color: "#334155", dashArray: "3", fillOpacity: 0.75 });
       },
     });
   };
 
-  // Calculate summary statistics
-  const totalVerified = Object.values(counts.verified).reduce(
-    (a, b) => a + b,
-    0,
-  );
-  const totalProjected = Object.values(counts.projected).reduce(
-    (a, b) => a + b,
-    0,
-  );
-  const totalMembers = totalVerified + totalProjected;
-  const verificationRate =
-    totalMembers > 0
-      ? ((totalVerified / totalMembers) * 100).toFixed(1)
-      : "0.0";
+  const totalVerified  = Object.values(counts.verified).reduce((a, b) => a + b, 0);
+  const totalProjected = Object.values(counts.projected).reduce((a, b) => a + b, 0);
+  const totalMembers   = totalVerified + totalProjected;
+  const verRate = totalMembers > 0 ? ((totalVerified / totalMembers) * 100).toFixed(1) : "0.0";
 
-  // Format growth data for chart
   const growthChartData = Object.entries(growthData)
-    .map(([month, count]) => ({
-      month,
-      members: count,
-    }))
-    .slice(-12); // Last 12 months
+    .map(([month, members]) => ({ month, members }))
+    .slice(-12);
 
-  // Format state data for chart
   const stateChartData = Object.entries(geoData.by_state)
     .map(([state, count]) => ({ state, count }))
     .sort((a, b) => b.count - a.count);
 
-  // Top 10 electorates
   const topElectorates = Object.entries(counts.verified)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
 
-  return (
-    <div className="h-screen flex flex-col bg-slate-900 text-white">
-      {/* Header */}
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            asChild
-            className="text-slate-400 hover:text-white"
-          >
-            <Link to="/dashboard">
-              <ArrowLeft className="w-6 h-6" />
-            </Link>
-          </Button>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">
-            War Room
-          </h1>
-        </div>
+  /* ── Tab button style ──────────────────────────────────────────────────── */
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    padding: "6px 14px",
+    borderRadius: 7,
+    border: "none",
+    background: active ? "oklch(100% 0 0 / 0.12)" : "transparent",
+    color: active ? "oklch(96% 0.006 240)" : "oklch(60% 0.015 240)",
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "background-color 150ms ease-out, color 150ms ease-out",
+  });
 
-        <div className="flex items-center gap-4">
-          {/* View Toggle */}
-          <div className="flex items-center gap-2 bg-slate-800 p-1 rounded-lg">
-            <button
-              onClick={() => setActiveView("map")}
-              className={`px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${activeView === "map" ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"}`}
-            >
-              <MapIcon className="w-4 h-4" />
-              Map
+  const modeBtn = (mode: typeof viewMode, active: boolean): React.CSSProperties => ({
+    padding: "5px 12px",
+    borderRadius: 6,
+    border: "none",
+    fontSize: 12.5,
+    fontWeight: 700,
+    cursor: "pointer",
+    background: active ? (mode === "verified" ? "#16a34a" : mode === "projected" ? "#d97706" : "var(--ops-blue)") : "transparent",
+    color: active ? "#fff" : "oklch(60% 0.015 240)",
+    transition: "background-color 150ms ease-out, color 150ms ease-out",
+  });
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "var(--navy)", color: "oklch(90% 0.008 240)" }}>
+
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 24px",
+          borderBottom: "1px solid var(--navy-border)",
+          flexShrink: 0,
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontWeight: 800,
+            fontSize: 18,
+            color: "oklch(97% 0.006 240)",
+            margin: 0,
+            letterSpacing: "-0.01em",
+          }}
+        >
+          War Room
+        </h1>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {/* View toggle */}
+          <div style={{ display: "flex", gap: 2, background: "oklch(100% 0 0 / 0.06)", padding: 3, borderRadius: 9 }}>
+            <button onClick={() => setActiveView("map")} style={tabStyle(activeView === "map")}>
+              <MapIcon size={14} strokeWidth={2} /> Map
             </button>
-            <button
-              onClick={() => setActiveView("dashboard")}
-              className={`px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${activeView === "dashboard" ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"}`}
-            >
-              <BarChart3 className="w-4 h-4" />
-              Dashboard
+            <button onClick={() => setActiveView("analytics")} style={tabStyle(activeView === "analytics")}>
+              <BarChart3 size={14} strokeWidth={2} /> Analytics
             </button>
           </div>
 
-          {/* Data Mode Toggle (for Map view) */}
+          {/* Mode toggle (map only) */}
           {activeView === "map" && (
-            <div className="flex items-center gap-2 bg-slate-850 p-1.5 rounded-lg border border-slate-850/50">
-              <button
-                onClick={() => setViewMode("verified")}
-                className={`px-3 py-1 rounded-md text-sm font-semibold transition-colors ${viewMode === "verified" ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-white"}`}
-              >
-                Verified
-              </button>
-              <button
-                onClick={() => setViewMode("projected")}
-                className={`px-3 py-1 rounded-md text-sm font-semibold transition-colors ${viewMode === "projected" ? "bg-amber-600 text-white" : "text-slate-400 hover:text-white"}`}
-              >
-                Projected
-              </button>
-              <button
-                onClick={() => setViewMode("combined")}
-                className={`px-3 py-1 rounded-md text-sm font-semibold transition-colors ${viewMode === "combined" ? "bg-primary text-white" : "text-slate-400 hover:text-white"}`}
-              >
-                Combined
-              </button>
+            <div style={{ display: "flex", gap: 2, background: "oklch(100% 0 0 / 0.06)", padding: 3, borderRadius: 9 }}>
+              {(["verified", "projected", "combined"] as const).map((m) => (
+                <button key={m} onClick={() => setViewMode(m)} style={modeBtn(m, viewMode === m)}>
+                  {m.charAt(0).toUpperCase() + m.slice(1)}
+                </button>
+              ))}
             </div>
           )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, overflow: "hidden" }}>
         {loading ? (
-          <div className="h-full flex items-center justify-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-500"></div>
+          <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="animate-spin-slow" style={{ width: 32, height: 32 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--ops-blue)" strokeWidth="2.5">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              </svg>
+            </div>
           </div>
         ) : activeView === "map" ? (
-          <div className="h-full relative">
+          <div style={{ height: "100%", position: "relative" }}>
             {/* Legend */}
-            <div className="absolute top-4 right-4 z-[1000] bg-slate-800/95 backdrop-blur-sm p-4 rounded-lg border border-slate-700 shadow-xl">
-              <div className="text-sm font-semibold mb-3 text-slate-300">
+            <div
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                zIndex: 1000,
+                background: "rgba(15,23,42,0.95)",
+                border: "1px solid var(--navy-border)",
+                borderRadius: 10,
+                padding: "14px 16px",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "oklch(55% 0.015 240)", marginBottom: 10 }}>
                 Legend
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full bg-[#006d2c]"></span>
-                  <span className="text-xs text-slate-400">
-                    Verified (High)
-                  </span>
+              {[
+                { color: "#006d2c", label: "Members (High)" },
+                { color: "#74c476", label: "Members (Med)" },
+                { color: "#c7e9c0", label: "Members (Low)" },
+                { color: "#800026", label: "Projected (High)" },
+                { color: "#FD8D3C", label: "Projected (Med)" },
+              ].map(({ color, label }) => (
+                <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ width: 12, height: 12, borderRadius: 3, background: color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 11.5, color: "oklch(65% 0.015 240)" }}>{label}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full bg-[#74c476]"></span>
-                  <span className="text-xs text-slate-400">Verified (Med)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full bg-[#c7e9c0]"></span>
-                  <span className="text-xs text-slate-400">Verified (Low)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full bg-[#800026]"></span>
-                  <span className="text-xs text-slate-400">
-                    Projected (High)
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full bg-[#FD8D3C]"></span>
-                  <span className="text-xs text-slate-400">
-                    Projected (Med)
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
 
             <MapContainer
@@ -366,7 +311,7 @@ export function WarRoom() {
               style={{ height: "100%", width: "100%", background: "#0f172a" }}
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               />
               {geoJsonData && (
@@ -380,135 +325,101 @@ export function WarRoom() {
             </MapContainer>
           </div>
         ) : (
-          <div className="h-full overflow-y-auto p-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-750">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-slate-400 text-sm font-semibold">Total Members</div>
-                  <Users className="w-5 h-5 text-slate-400" />
-                </div>
-                <div className="text-3xl font-extrabold text-white">
-                  {totalMembers.toLocaleString()}
-                </div>
-              </div>
-              <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-750">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-slate-400 text-sm font-semibold">Verified</div>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-450" />
-                </div>
-                <div className="text-3xl font-extrabold text-emerald-400">
-                  {totalVerified.toLocaleString()}
-                </div>
-              </div>
-              <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-750">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-slate-400 text-sm font-semibold">Projected</div>
-                  <Target className="w-5 h-5 text-amber-455" />
-                </div>
-                <div className="text-3xl font-extrabold text-amber-400">
-                  {totalProjected.toLocaleString()}
-                </div>
-              </div>
-              <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-750">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-slate-400 text-sm font-semibold">
-                    Verification Rate
+          <div style={{ height: "100%", overflowY: "auto", padding: 24 }}>
+            {/* Stats row */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
+              {[
+                { icon: Users,      label: "Members",      value: totalMembers.toLocaleString("en-AU"),  color: "oklch(97% 0.006 240)" },
+                { icon: Target,     label: "Verified",     value: totalVerified.toLocaleString("en-AU"), color: "#4ade80" },
+                { icon: TrendingUp, label: "Projected",    value: totalProjected.toLocaleString("en-AU"),color: "#fbbf24" },
+                { icon: BarChart3,  label: "Enrolment Rate", value: `${verRate}%`,                       color: "oklch(68% 0.22 260)" },
+              ].map(({ icon: Icon, label, value, color }) => (
+                <div
+                  key={label}
+                  style={{
+                    background: "oklch(100% 0 0 / 0.04)",
+                    border: "1px solid var(--navy-border)",
+                    borderRadius: 12,
+                    padding: "18px 20px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "oklch(50% 0.015 240)" }}>{label}</span>
+                    <Icon size={14} strokeWidth={2} style={{ color: "oklch(50% 0.015 240)" }} />
                   </div>
-                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: 26, color, letterSpacing: "-0.02em" }}>
+                    {value}
+                  </div>
                 </div>
-                <div className="text-3xl font-extrabold text-primary">
-                  {verificationRate}%
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Growth Chart */}
-            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-6">
-              <h2 className="text-xl font-semibold mb-4 text-slate-200">
-                Member Growth
-              </h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={growthChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis
-                    dataKey="month"
-                    stroke="#94a3b8"
-                    style={{ fontSize: "12px" }}
-                  />
-                  <YAxis stroke="#94a3b8" style={{ fontSize: "12px" }} />
-                  <RechartsTooltip
-                    contentStyle={{
-                      backgroundColor: "#1e293b",
-                      border: "1px solid #475569",
-                      borderRadius: "6px",
-                    }}
-                    labelStyle={{ color: "#f1f5f9" }}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="members"
-                    stroke="#3553eb"
-                    strokeWidth={2}
-                    dot={{ fill: "#3553eb" }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* State Distribution */}
-              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <h2 className="text-xl font-semibold mb-4 text-slate-200">
-                  Distribution by State
+            {/* Growth chart */}
+            {growthChartData.length > 0 && (
+              <div style={{ background: "oklch(100% 0 0 / 0.04)", border: "1px solid var(--navy-border)", borderRadius: 12, padding: 20, marginBottom: 20 }}>
+                <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 14, color: "oklch(90% 0.008 240)", margin: "0 0 16px" }}>
+                  Member Growth
                 </h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={stateChartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                    <XAxis
-                      dataKey="state"
-                      stroke="#94a3b8"
-                      style={{ fontSize: "12px" }}
-                    />
-                    <YAxis stroke="#94a3b8" style={{ fontSize: "12px" }} />
+                <ResponsiveContainer width="100%" height={240}>
+                  <LineChart data={growthChartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="month" stroke="#475569" style={{ fontSize: 11 }} />
+                    <YAxis stroke="#475569" style={{ fontSize: 11 }} />
                     <RechartsTooltip
-                      contentStyle={{
-                        backgroundColor: "#1e293b",
-                        border: "1px solid #475569",
-                        borderRadius: "6px",
-                      }}
-                      labelStyle={{ color: "#f1f5f9" }}
+                      contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 6 }}
+                      labelStyle={{ color: "#f1f5f9", fontSize: 12 }}
                     />
-                    <Bar dataKey="count" fill="#10b981" />
-                  </BarChart>
+                    <Line type="monotone" dataKey="members" stroke="#3553eb" strokeWidth={2} dot={false} />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
+            )}
 
-              {/* Top Electorates */}
-              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <h2 className="text-xl font-semibold mb-4 text-slate-200">
-                  Top 10 Electorates
-                </h2>
-                <div className="space-y-3">
-                  {topElectorates.map(([name, count], index) => (
-                    <div
-                      key={name}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="text-slate-500 font-mono text-sm w-6">
-                          #{index + 1}
-                        </div>
-                        <div className="text-slate-200">{name}</div>
-                      </div>
-                      <div className="text-green-400 font-semibold">
-                        {count}
-                      </div>
-                    </div>
-                  ))}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              {/* State distribution */}
+              {stateChartData.length > 0 && (
+                <div style={{ background: "oklch(100% 0 0 / 0.04)", border: "1px solid var(--navy-border)", borderRadius: 12, padding: 20 }}>
+                  <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 14, color: "oklch(90% 0.008 240)", margin: "0 0 16px" }}>
+                    Members by State
+                  </h2>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={stateChartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="state" stroke="#475569" style={{ fontSize: 11 }} />
+                      <YAxis stroke="#475569" style={{ fontSize: 11 }} />
+                      <RechartsTooltip
+                        contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 6 }}
+                        labelStyle={{ color: "#f1f5f9", fontSize: 12 }}
+                      />
+                      <Bar dataKey="count" fill="#3553eb" radius={[3, 3, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
-              </div>
+              )}
+
+              {/* Top electorates */}
+              {topElectorates.length > 0 && (
+                <div style={{ background: "oklch(100% 0 0 / 0.04)", border: "1px solid var(--navy-border)", borderRadius: 12, padding: 20 }}>
+                  <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 14, color: "oklch(90% 0.008 240)", margin: "0 0 16px" }}>
+                    Top 10 Electorates
+                  </h2>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {topElectorates.map(([name, count], i) => (
+                      <div key={name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "oklch(42% 0.015 260)", width: 20, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span style={{ flex: 1, fontSize: 13, color: "oklch(80% 0.01 240)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {name}
+                        </span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#4ade80", fontVariantNumeric: "tabular-nums" }}>
+                          {count.toLocaleString("en-AU")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
