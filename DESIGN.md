@@ -76,7 +76,7 @@ PoliCRM employs a Committed color strategy. A single saturated political blue dr
 - **Partial Status** (#f59e0b / oklch(75% 0.15 70)): Indicating partial postcode/address matches.
 - **Fail Status** (#ef4444 / oklch(58% 0.22 25)): Indicating validation failures.
 
-**The Tinted Neutral Rule.** Pure grays, pure white (#ffffff), and pure black (#000000) are forbidden. All neutral shades must carry a subtle cool/navy undertone (chroma 0.005–0.03) to ensure branding cohesion across the entire surface.
+**The Tinted Neutral Rule.** Pure grays and pure black (#000000) are forbidden. All neutral shades must carry a subtle cool/navy undertone (chroma 0.005–0.03) to ensure branding cohesion across the entire surface. Exception: UI surfaces such as card backgrounds, button text, and form inputs may use pure white (`#ffffff`) to maintain legibility and contrast; the tinted-neutral requirement applies to all other decorative and structural surfaces.
 
 **The Accent Discipline Rule.** Saturated operations blue is restricted to active controls, buttons, and state indicator highlights. No decorative colored accents, side-stripes, or gradient overlays are allowed on container elements.
 

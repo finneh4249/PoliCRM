@@ -3,9 +3,9 @@ import { Sidebar } from "./Sidebar";
 
 export function Layout() {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--canvas)" }}>
+    <div style={{ display: "flex", height: "100vh", background: "var(--canvas)" }}>
       <Sidebar />
-      <main style={{ flex: 1, minWidth: 0, overflowY: "auto" }}>
+      <main style={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: "auto" }}>
         <Outlet />
       </main>
     </div>

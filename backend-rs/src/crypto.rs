@@ -59,7 +59,8 @@ pub fn decrypt(encoded: &str) -> Result<String, String> {
 /// Generates a deterministic blind index for a searchable PII field.
 /// Uses SHA-256 with the ENCRYPTION_KEY as a pepper to prevent rainbow table attacks.
 pub fn blind_index(value: &str) -> String {
-    let key_str = std::env::var("ENCRYPTION_KEY").unwrap_or_default();
+    let key_str = std::env::var("ENCRYPTION_KEY")
+        .expect("ENCRYPTION_KEY must be set for blind_index");
     let mut hasher = Sha256::new();
     hasher.update(value.to_lowercase().trim().as_bytes());
     hasher.update(key_str.as_bytes()); // pepper

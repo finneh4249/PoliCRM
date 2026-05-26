@@ -40,18 +40,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setUser(JSON.parse(stored));
+        const parsed = JSON.parse(stored) as unknown;
+        // Validate required shape before trusting stored data
+        if (
+          parsed !== null &&
+          typeof parsed === "object" &&
+          "id" in parsed &&
+          "name" in parsed &&
+          "email" in parsed &&
+          "role" in parsed
+        ) {
+          setUser(parsed as User);
+        } else {
+          console.error("Invalid auth payload in storage; clearing.", STORAGE_KEY);
+          localStorage.removeItem(STORAGE_KEY);
+        }
       }
-    } catch {
+    } catch (err) {
+      console.error("Failed to restore auth session from storage:", STORAGE_KEY, err);
       localStorage.removeItem(STORAGE_KEY);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    // Stub: any credentials succeed. Swap this for a real call in Phase 2.
-    console.log(`Stub login attempt for email: ${email} (password length: ${password.length})`);
+  const login = useCallback(async (email: string, _password: string) => {
+    if (import.meta.env.MODE !== "development") {
+      throw new Error("Authentication is not yet configured for production.");
+    }
+    // Dev stub: accept any credentials.
+    // TODO: Replace with real auth (Firebase or otherwise) in Phase 2.
     await new Promise((r) => setTimeout(r, 600)); // Simulate network delay
     setUser(STUB_USER);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(STUB_USER));

@@ -53,8 +53,13 @@
   }
 
   html {
-    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
   body {
@@ -343,3 +348,11 @@
 .animate-fade-in  { animation: fade-in  0.2s ease-out; }
 .animate-slide-in { animation: slide-in 0.2s ease-out; }
 .animate-spin-slow { animation: spin-slow 1.2s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-in,
+  .animate-spin-slow {
+    animation: none;
+  }
+}

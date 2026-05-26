@@ -5,7 +5,7 @@
 product
 
 ## Users
-Organizers, campaign managers, compliance officers, and volunteers of Australian political parties who need to manage lists of members, verify voter enrollment details against the Australian Electoral Commission (AEC), and visualize voter density for campaign targetting.
+Organizers, campaign managers, compliance officers, and volunteers of Australian political parties who need to manage lists of members, verify voter enrollment details against the Australian Electoral Commission (AEC), and visualize voter density for campaign targeting.
 
 ## Product Purpose
 Automate member registration validation, clean address databases, and track campaign readiness. PoliCRM provides real-time AEC validation background worker status, detailed member status tracking, electoral maps (War Room), and compliance-ready data exports to secure or maintain official party registration.

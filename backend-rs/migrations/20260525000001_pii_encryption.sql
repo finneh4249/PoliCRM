@@ -1,7 +1,6 @@
 -- 0002_pii_encryption.sql
--- Adds email_blind_index for searchable encrypted email lookups
--- PII columns are already TEXT in SQLite, but we now document them as encrypted
+-- Adds first_name_encrypted and last_name_encrypted columns.
+-- NOTE: email_blind_index already exists in the initial schema migration.
 
-ALTER TABLE persons ADD COLUMN email_blind_index TEXT;
 ALTER TABLE persons ADD COLUMN first_name_encrypted TEXT;
 ALTER TABLE persons ADD COLUMN last_name_encrypted TEXT;

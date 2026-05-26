@@ -8,7 +8,7 @@
 
 ## Architecture Principles
 
-```
+```text
 Frontend Apps (React / Next.js)
         ↓
 Unified API Layer (Rust / Axum)
@@ -134,7 +134,7 @@ Specialized Services (Stripe, Postmark, Twilio, Auth0)
 ## Phase 4: Events, Canvassing & Volunteering
 *Goal: Workflow-centric. Map the full volunteer journey.*
 
-```
+```text
 Petition signer
   → Auto-tagged by issue/geography
   → Invited to local event

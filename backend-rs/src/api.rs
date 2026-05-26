@@ -91,6 +91,26 @@ async fn create_person(
     State(pool): State<SqlitePool>,
     Json(payload): Json<CreatePersonPayload>,
 ) -> Result<impl IntoResponse, StatusCode> {
+    // Validate required fields
+    if payload.first_name.trim().is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+    if payload.last_name.trim().is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+    if payload.primary_address1.trim().is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+    if payload.primary_city.trim().is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+    if payload.primary_state.trim().is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+    if payload.primary_zip.trim().is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
     let id = Uuid::new_v4();
     let country_code = payload.primary_country_code.unwrap_or_else(|| "AU".to_string());
 
@@ -228,7 +248,13 @@ async fn import_nationbuilder(
     let slug = std::env::var("NATIONBUILDER_SLUG").unwrap_or_else(|_| "futureparty".to_string());
     let url = format!("https://{}.nationbuilder.com/api/v1/people?limit=100", slug);
 
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .map_err(|e| {
+            eprintln!("Failed to build HTTP client: {}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
     let response = client
         .get(&url)
         .header("Authorization", format!("Bearer {}", api_key))
@@ -286,16 +312,40 @@ async fn import_nationbuilder(
 
         // Encrypt PII
         let enc_first_name = match encrypt(&first_name) { Ok(v) => v, Err(e) => { eprintln!("Encrypt error: {}", e); continue; } };
-        let enc_middle_name = match encrypt_opt(nb_person.middle_name.as_deref()) { Ok(v) => v, Err(_) => None };
+        let enc_middle_name = match encrypt_opt(nb_person.middle_name.as_deref()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Encrypt error for middle_name (nb_id={}): {}", provider_id, e); continue; }
+        };
         let enc_last_name = match encrypt(&last_name) { Ok(v) => v, Err(e) => { eprintln!("Encrypt error: {}", e); continue; } };
-        let enc_email = match encrypt_opt(nb_person.email.as_deref()) { Ok(v) => v, Err(_) => None };
+        let enc_email = match encrypt_opt(nb_person.email.as_deref()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Encrypt error for email (nb_id={}): {}", provider_id, e); continue; }
+        };
         let email_idx = nb_person.email.as_deref().filter(|e| !e.is_empty()).map(blind_index);
-        let enc_phone = match encrypt_opt(nb_person.phone.as_deref()) { Ok(v) => v, Err(_) => None };
-        let enc_mobile = match encrypt_opt(nb_person.mobile.as_deref()) { Ok(v) => v, Err(_) => None };
-        let enc_address1 = match encrypt(&addr.address1.clone().unwrap_or_default()) { Ok(v) => v, Err(_) => String::new() };
-        let enc_address2 = match encrypt_opt(addr.address2.as_deref()) { Ok(v) => v, Err(_) => None };
-        let enc_address3 = match encrypt_opt(addr.address3.as_deref()) { Ok(v) => v, Err(_) => None };
-        let enc_city = match encrypt(&addr.city.clone().unwrap_or_default()) { Ok(v) => v, Err(_) => String::new() };
+        let enc_phone = match encrypt_opt(nb_person.phone.as_deref()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Encrypt error for phone (nb_id={}): {}", provider_id, e); continue; }
+        };
+        let enc_mobile = match encrypt_opt(nb_person.mobile.as_deref()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Encrypt error for mobile (nb_id={}): {}", provider_id, e); continue; }
+        };
+        let enc_address1 = match encrypt(&addr.address1.clone().unwrap_or_default()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Encrypt error for address1 (nb_id={}): {}", provider_id, e); continue; }
+        };
+        let enc_address2 = match encrypt_opt(addr.address2.as_deref()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Encrypt error for address2 (nb_id={}): {}", provider_id, e); continue; }
+        };
+        let enc_address3 = match encrypt_opt(addr.address3.as_deref()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Encrypt error for address3 (nb_id={}): {}", provider_id, e); continue; }
+        };
+        let enc_city = match encrypt(&addr.city.clone().unwrap_or_default()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Encrypt error for city (nb_id={}): {}", provider_id, e); continue; }
+        };
         let primary_state = addr.state.unwrap_or_default();
         let primary_zip = addr.zip.unwrap_or_default();
         let country_code = addr.country_code.unwrap_or_else(|| "AU".to_string());
@@ -354,8 +404,12 @@ async fn import_nationbuilder(
             continue;
         }
 
-        if tx.commit().await.is_ok() {
-            imported_count += 1;
+        match tx.commit().await {
+            Ok(_) => imported_count += 1,
+            Err(e) => {
+                eprintln!("Failed to commit transaction for nb_id={}: {}", provider_id, e);
+                // Row is not counted; continue to next record
+            }
         }
     }
 

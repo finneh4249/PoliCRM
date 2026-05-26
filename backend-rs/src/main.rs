@@ -18,8 +18,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://crm.db".to_string());
     
     // Ensure the db file exists for sqlite
-    if database_url.starts_with("sqlite://") && !std::path::Path::new("crm.db").exists() {
-        std::fs::File::create("crm.db")?;
+    if database_url.starts_with("sqlite://") {
+        let sqlite_path = database_url.trim_start_matches("sqlite://");
+        let db_path = std::path::Path::new(sqlite_path);
+        if !db_path.exists() {
+            if let Some(parent) = db_path.parent() {
+                if !parent.as_os_str().is_empty() {
+                    std::fs::create_dir_all(parent)?;
+                }
+            }
+            std::fs::File::create(db_path)?;
+        }
     }
 
     let pool = SqlitePoolOptions::new()
