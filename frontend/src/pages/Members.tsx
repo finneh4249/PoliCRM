@@ -68,7 +68,7 @@ export default function Members() {
         setMembers(
           (result.data ?? []).map((m) => ({
             ...m,
-            membership_status: "active" as MembershipStatus,
+            membership_status: (m.membership_status ?? "active") as MembershipStatus,
           })),
         );
         setTotal(result.total ?? 0);
@@ -80,7 +80,8 @@ export default function Members() {
           });
         }
         setOffline(false);
-      } catch {
+      } catch (err: unknown) {
+        console.error("personsApi.list failed:", (err instanceof Error ? err.message : err), { search, stateFilter, statusFilter, pageIndex, PAGE_SIZE });
         setOffline(true);
         // Fall back to mock data with client-side filtering
         let filtered = MOCK_MEMBERS;

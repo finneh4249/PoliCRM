@@ -38,6 +38,7 @@ export interface Person {
   email?: string; // encrypted at rest — may be absent
   primary_state?: string;
   primary_zip?: string;
+  membership_status?: string;
   created_at: string;
   updated_at: string;
 }

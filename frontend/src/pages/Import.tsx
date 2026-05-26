@@ -164,7 +164,9 @@ export default function Import() {
 
   // Poll running jobs
   useEffect(() => {
-    importApi.list().then(setJobs).catch(() => {});
+    importApi.list().then(setJobs).catch((err: unknown) => {
+      console.error("importApi.list failed:", (err instanceof Error ? err.message : err));
+    });
   }, []);
 
   const handleFile = useCallback((file: File) => {
@@ -191,7 +193,8 @@ export default function Import() {
       const job = await importApi.uploadCsv(selectedFile);
       setJobs((prev) => [job, ...prev]);
       setSelectedFile(null);
-    } catch {
+    } catch (err: unknown) {
+      console.error("importApi.uploadCsv failed:", (err instanceof Error ? err.message : err));
       setUploadError("Upload failed. Is the backend running?");
     } finally {
       setUploading(false);
