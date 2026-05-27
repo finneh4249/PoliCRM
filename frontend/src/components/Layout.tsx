@@ -1,13 +1,16 @@
-import { Outlet } from 'react-router-dom';
-import { Sidebar } from './Sidebar';
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import { Sidebar } from "./Sidebar";
 
 export function Layout() {
-    return (
-        <div className="flex min-h-screen bg-slate-100">
-            <Sidebar />
-            <div className="flex-1 ml-64 transition-all duration-300">
-                <Outlet />
-            </div>
-        </div>
-    );
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"}`}>
+        <Outlet />
+      </main>
+    </div>
+  );
 }

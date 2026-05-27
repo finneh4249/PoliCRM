@@ -1,196 +1,324 @@
-import { useStore } from '@nanostores/react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { $stats, fetchStats } from '../stores/statsStore';
-import { useEffect } from 'react';
-import { signOut } from 'firebase/auth';
-import { auth } from '../utils/firebase';
-import { updateFilters } from '../stores/membersStore';
+import { useStore } from "@nanostores/react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { $stats, fetchStats } from "../stores/statsStore";
+import { useEffect } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "../utils/firebase";
+import { updateFilters } from "../stores/membersStore";
+import {
+  LayoutDashboard,
+  Users,
+  Map,
+  ClipboardList,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  XCircle,
+  RotateCcw,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
 
-export function Sidebar() {
-    const stats = useStore($stats);
-    const navigate = useNavigate();
+  Database,
+  RefreshCw,
+  Home,
+} from "lucide-react";
 
-    useEffect(() => {
-        fetchStats();
-        // Refresh stats every 30 seconds
-        const interval = setInterval(fetchStats, 30000);
-        return () => clearInterval(interval);
-    }, []);
+interface SidebarProps {
+  collapsed: boolean;
+  onToggle: () => void;
+}
 
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            navigate('/login');
-        } catch (error) {
-            console.error('Sign out failed:', error);
-        }
-    };
+export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+  const stats = useStore($stats);
+  const navigate = useNavigate();
 
-    const handleFilterClick = (status: string) => {
-        // Reset other filters and set status
-        updateFilters({
-            search: '',
-            status: [status],
-            state: 'all',
-            tags: [],
-            tagOperator: 'AND'
-        });
-        navigate('/dashboard');
-    };
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
-    const handleResetFilters = () => {
-        updateFilters({
-            search: '',
-            status: [],
-            state: 'all',
-            tags: [],
-            tagOperator: 'AND'
-        });
-    };
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login");
+    } catch (error) {
+      console.error("Sign out failed:", error);
+    }
+  };
 
-    return (
-        <div className="fixed inset-y-0 left-0 w-64 gradient-bg text-white shadow-2xl z-40 flex flex-col">
-            {/* Logo/Brand */}
-            <div className="p-6 border-b border-white/20">
-                <h1 className="text-2xl font-bold">🗳️ PoliCRM</h1>
-                <p className="text-indigo-200 text-xs mt-1">Electoral Verification System</p>
-            </div>
+  const handleFilterClick = (status: string) => {
+    updateFilters({
+      search: "",
+      status: [status],
+      state: "all",
+      tags: [],
+      tagOperator: "AND",
+    });
+    navigate("/members");
+  };
 
-            {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                <NavLink
-                    to="/dashboard"
-                    end
-                    onClick={handleResetFilters}
-                    className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-white/20 text-white' : 'text-indigo-100 hover:bg-white/10 hover:text-white'}`
-                    }
-                >
-                    <span className="text-lg">📊</span>
-                    <span>Dashboard</span>
-                </NavLink>
+  const handleResetFilters = () => {
+    updateFilters({
+      search: "",
+      status: [],
+      state: "all",
+      tags: [],
+      tagOperator: "AND",
+    });
+  };
 
-                <NavLink
-                    to="/war-room"
-                    className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-white/20 text-white' : 'text-indigo-100 hover:bg-white/10 hover:text-white'}`
-                    }
-                >
-                    <span className="text-lg">🗺️</span>
-                    <span>War Room</span>
-                </NavLink>
+  const navLinkClasses = (isActive: boolean) =>
+    `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+      isActive
+        ? "bg-primary/15 text-primary"
+        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+    } ${collapsed ? "justify-center" : ""}`;
 
-                <NavLink
-                    to="/queue"
-                    className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-white/20 text-white' : 'text-indigo-100 hover:bg-white/10 hover:text-white'}`
-                    }
-                >
-                    <span className="text-lg">⚙️</span>
-                    <span>Background Queue</span>
-                </NavLink>
+  const statusButtonClasses = (color: string) =>
+    `w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+      collapsed ? "justify-center" : ""
+    } ${color}`;
 
-                <div className="border-t border-white/20 my-4"></div>
+  const sectionLabelClasses = "px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2";
 
-                <button
-                    onClick={() => handleFilterClick('Verified')}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-colors"
-                >
-                    <span className="text-lg">✅</span>
-                    <span>Verified</span>
-                    <span className="ml-auto bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {stats.verified}
-                    </span>
-                </button>
+  return (
+    <div
+      className={`fixed inset-y-0 left-0 bg-sidebar-bg border-r border-sidebar-border z-40 flex flex-col transition-all duration-300 ${
+        collapsed ? "w-20" : "w-64"
+      }`}
+    >
+      {/* Logo/Brand */}
+      <div
+        className={`p-5 border-b border-sidebar-border flex items-center ${
+          collapsed ? "justify-center px-4" : "justify-between"
+        }`}
+      >
+        {!collapsed && (
+          <div>
+            <h1 className="text-xl font-bold text-foreground">PoliCRM</h1>
+            <p className="text-muted-foreground text-xs mt-0.5">Campaign Management</p>
+          </div>
+        )}
+        <button
+          onClick={onToggle}
+          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+        >
+          {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+        </button>
+      </div>
 
-                <button
-                    onClick={() => handleFilterClick('Unchecked')}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-colors"
-                >
-                    <span className="text-lg">⏳</span>
-                    <span>Pending Check</span>
-                    <span className="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {stats.unchecked}
-                    </span>
-                </button>
+      {/* Navigation */}
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden">
+        {/* Core Navigation */}
+        {!collapsed && <p className={sectionLabelClasses}>Core</p>}
+        
+        <NavLink
+          to="/dashboard"
+          end
+          onClick={handleResetFilters}
+          className={({ isActive }) => navLinkClasses(isActive)}
+          title="Dashboard"
+        >
+          <LayoutDashboard className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Dashboard</span>}
+        </NavLink>
 
-                <button
-                    onClick={() => handleFilterClick('Partial')}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-colors"
-                >
-                    <span className="text-lg">⚠️</span>
-                    <span>Partial Matches</span>
-                    <span className="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {stats.partial}
-                    </span>
-                </button>
+        <NavLink
+          to="/members"
+          className={({ isActive }) => navLinkClasses(isActive)}
+          title="Contacts"
+        >
+          <Users className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Contacts</span>}
+        </NavLink>
 
-                <button
-                    onClick={() => handleFilterClick('Fail')}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-colors"
-                >
-                    <span className="text-lg">❌</span>
-                    <span>Failed Checks</span>
-                    <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {stats.failed}
-                    </span>
-                </button>
+        <NavLink
+          to="/war-room"
+          className={({ isActive }) => navLinkClasses(isActive)}
+          title="Campaign HQ"
+        >
+          <Map className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Campaign HQ</span>}
+        </NavLink>
 
-                <button
-                    onClick={() => handleFilterClick('Captcha')}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-colors"
-                >
-                    <span className="text-lg">🔄</span>
-                    <span>Captcha Issues</span>
-                    <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {stats.captcha}
-                    </span>
-                </button>
+        <NavLink
+          to="/electoral-roll"
+          className={({ isActive }) => navLinkClasses(isActive)}
+          title="Electoral Roll"
+        >
+          <ClipboardList className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Electoral Roll</span>}
+        </NavLink>
 
-                <button
-                    onClick={() => handleFilterClick('Duplicate')}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-indigo-100 hover:bg-white/10 hover:text-white transition-colors"
-                >
-                    <span className="text-lg">👯</span>
-                    <span>Duplicates</span>
-                    <span className="ml-auto bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {stats.duplicate}
-                    </span>
-                </button>
+        <NavLink
+          to="/household-analytics"
+          className={({ isActive }) => navLinkClasses(isActive)}
+          title="Household Analytics"
+        >
+          <Home className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Households</span>}
+        </NavLink>
 
-                <div className="border-t border-white/20 my-4"></div>
+        {/* Admin Section */}
+        {!collapsed && (
+          <div className="border-t border-sidebar-border my-4 pt-4">
+            <p className={sectionLabelClasses}>Admin</p>
+          </div>
+        )}
 
-                {/* User Info */}
-                <div className="px-4 py-3 mt-auto">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-white">{auth.currentUser?.email}</p>
-                        </div>
-                        <button onClick={handleLogout} className="text-indigo-200 hover:text-white" title="Logout">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </nav>
+        <NavLink
+          to="/queue"
+          className={({ isActive }) => navLinkClasses(isActive)}
+          title="Queue"
+        >
+          <RefreshCw className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Queue</span>}
+        </NavLink>
 
-            {/* Footer Stats */}
-            <div className="p-4 border-t border-white/20 bg-white/10">
-                <div className="text-xs text-indigo-200 mb-2">Quick Stats</div>
-                <div className="grid grid-cols-2 gap-2 text-center">
-                    <div className="bg-white/10 rounded-lg p-2">
-                        <div className="text-2xl font-bold">{stats.total}</div>
-                        <div className="text-xs text-indigo-200">Total</div>
-                    </div>
-                    <div className="bg-white/10 rounded-lg p-2">
-                        <div className="text-2xl font-bold text-green-300">
-                            {stats.total > 0 ? Math.round((stats.verified / stats.total) * 100) : 0}%
-                        </div>
-                        <div className="text-xs text-indigo-200">Verified</div>
-                    </div>
-                </div>
-            </div>
+        <NavLink
+          to="/database"
+          className={({ isActive }) => navLinkClasses(isActive)}
+          title="Database"
+        >
+          <Database className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Database</span>}
+        </NavLink>
+
+        {/* Status Filters Section */}
+        {!collapsed && (
+          <div className="border-t border-sidebar-border my-4 pt-4">
+            <p className={sectionLabelClasses}>Quick Filters</p>
+          </div>
+        )}
+
+        <div className="space-y-1 mt-2">
+          <button
+            onClick={() => handleFilterClick("Verified")}
+            className={statusButtonClasses("bg-green-500/10 text-green-400 hover:bg-green-500/20")}
+            title="Verified"
+          >
+            <CheckCircle className="w-5 h-5 shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="flex-1 text-left">Verified</span>
+                <span className="text-xs font-medium bg-green-500/20 px-2 py-0.5 rounded">
+                  {stats.verified}
+                </span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => handleFilterClick("Unchecked")}
+            className={statusButtonClasses("bg-amber-500/10 text-amber-400 hover:bg-amber-500/20")}
+            title="Pending"
+          >
+            <Clock className="w-5 h-5 shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="flex-1 text-left">Pending</span>
+                <span className="text-xs font-medium bg-amber-500/20 px-2 py-0.5 rounded">
+                  {stats.unchecked}
+                </span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => handleFilterClick("Partial")}
+            className={statusButtonClasses("bg-orange-500/10 text-orange-400 hover:bg-orange-500/20")}
+            title="Partial"
+          >
+            <AlertTriangle className="w-5 h-5 shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="flex-1 text-left">Partial</span>
+                <span className="text-xs font-medium bg-orange-500/20 px-2 py-0.5 rounded">
+                  {stats.partial}
+                </span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => handleFilterClick("Fail")}
+            className={statusButtonClasses("bg-red-500/10 text-red-400 hover:bg-red-500/20")}
+            title="Failed"
+          >
+            <XCircle className="w-5 h-5 shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="flex-1 text-left">Failed</span>
+                <span className="text-xs font-medium bg-red-500/20 px-2 py-0.5 rounded">
+                  {stats.failed}
+                </span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => handleFilterClick("Captcha")}
+            className={statusButtonClasses("bg-purple-500/10 text-purple-400 hover:bg-purple-500/20")}
+            title="Captcha"
+          >
+            <RotateCcw className="w-5 h-5 shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="flex-1 text-left">Captcha</span>
+                <span className="text-xs font-medium bg-purple-500/20 px-2 py-0.5 rounded">
+                  {stats.captcha}
+                </span>
+              </>
+            )}
+          </button>
         </div>
-    );
+      </nav>
+
+      {/* User Section */}
+      <div className={`p-4 border-t border-sidebar-border ${collapsed ? "flex justify-center" : ""}`}>
+        <div className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
+          <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+            {auth.currentUser?.email?.charAt(0).toUpperCase() || "U"}
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">
+                {auth.currentUser?.email?.split("@")[0] || "User"}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {auth.currentUser?.email || ""}
+              </p>
+            </div>
+          )}
+          {!collapsed && (
+            <button
+              onClick={handleLogout}
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Footer Stats */}
+      {!collapsed && (
+        <div className="p-4 border-t border-sidebar-border bg-secondary/50">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center">
+              <div className="text-xl font-bold text-foreground">{stats.total}</div>
+              <div className="text-xs text-muted-foreground">Total</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-green-400">
+                {stats.total > 0 ? Math.round((stats.verified / stats.total) * 100) : 0}%
+              </div>
+              <div className="text-xs text-muted-foreground">Verified</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

@@ -5,15 +5,17 @@ This document outlines the recent improvements made to the AEC Checker script to
 ## Recent Enhancements
 
 ### 1. Retry Logic with Exponential Backoff
+
 - **Problem**: Network issues or temporary AEC website problems could cause valid checks to fail
 - **Solution**: Added configurable retry mechanism (default: 3 attempts) with exponential backoff
-- **Benefits**: 
+- **Benefits**:
   - Handles transient network failures automatically
   - Reduces false negatives from temporary issues
   - Exponential backoff prevents hammering the AEC site during outages
 - **Configuration**: `--max-retries` CLI argument or advanced TUI options
 
 ### 2. Rate Limiting and Delay Configuration
+
 - **Problem**: Running too fast could trigger CAPTCHA or temporary IP blocks
 - **Solution**: Random delays between requests (default: 1.5-3.0 seconds)
 - **Benefits**:
@@ -23,6 +25,7 @@ This document outlines the recent improvements made to the AEC Checker script to
 - **Configuration**: `--delay-min` and `--delay-max` CLI arguments
 
 ### 3. Enhanced Input Validation
+
 - **Problem**: Invalid input data would cause runtime failures deep in the process
 - **Solution**: Pre-flight validation of all records before processing
 - **Benefits**:
@@ -32,6 +35,7 @@ This document outlines the recent improvements made to the AEC Checker script to
 - **Usage**: `--dry-run` flag or "validation mode" in TUI
 
 ### 4. Improved Result Extraction
+
 - **Problem**: Electoral division information was returned as placeholders
 - **Solution**: Regex-based extraction of actual federal/state divisions, LGA, and ward data
 - **Benefits**:
@@ -41,6 +45,7 @@ This document outlines the recent improvements made to the AEC Checker script to
 - **Implementation**: `extract_electoral_info()` function in browser.py
 
 ### 5. Browser Crash Recovery
+
 - **Problem**: Browser crashes would kill entire thread, losing progress
 - **Solution**: Automatic driver recovery and reinitialization
 - **Benefits**:
@@ -50,6 +55,7 @@ This document outlines the recent improvements made to the AEC Checker script to
 - **Implementation**: Worker threads monitor browser health and reinitialize as needed
 
 ### 6. Better Error Handling
+
 - **Problem**: Generic exceptions made debugging difficult
 - **Solution**: Specific exception handling for different failure types
 - **Benefits**:
@@ -59,6 +65,7 @@ This document outlines the recent improvements made to the AEC Checker script to
 - **Examples**: FAIL_SUBURB, FAIL_STREET, FAIL_NO_MATCH result types
 
 ### 7. CAPTCHA Detection
+
 - **Problem**: Script would continue when CAPTCHA appeared, wasting time
 - **Solution**: Detect CAPTCHA challenges and handle appropriately
 - **Benefits**:
@@ -68,6 +75,7 @@ This document outlines the recent improvements made to the AEC Checker script to
 - **Implementation**: Page source scanning for CAPTCHA indicators
 
 ### 8. Improved Logging
+
 - **Problem**: Hard to track what was happening during long runs
 - **Solution**: Structured logging with better context and levels
 - **Benefits**:
@@ -78,15 +86,17 @@ This document outlines the recent improvements made to the AEC Checker script to
 - **Configuration**: Logged to `aec_checker.log` by default
 
 ### 9. Configuration File Support (Future)
+
 - **Status**: Template created (`config.example.json`)
 - **Purpose**: Store common settings instead of command-line args
-- **Benefits**: 
+- **Benefits**:
   - Easier to maintain consistent settings
   - Better for scheduled/automated runs
   - Can version control configurations
 - **Note**: Requires implementation to read and apply config
 
 ### 10. Enhanced TUI Features
+
 - **Dry-run mode**: Validate data without performing checks
 - **Advanced options**: Configure retries and delays interactively
 - **Better progress display**: Shows configuration before starting
@@ -95,6 +105,7 @@ This document outlines the recent improvements made to the AEC Checker script to
 ## Configuration Options
 
 ### Command Line (CLI)
+
 ```bash
 python aec_checker.py \
   --infile input.csv \
@@ -108,6 +119,7 @@ python aec_checker.py \
 ```
 
 ### Interactive (TUI)
+
 ```bash
 python aec_checker.py
 # Follow prompts, including new options for:
@@ -118,6 +130,7 @@ python aec_checker.py
 ## Best Practices
 
 ### For Large Datasets
+
 1. Start with `--dry-run` to validate input data
 2. Use `--headless` mode to reduce resource usage
 3. Set appropriate delays (2-4 seconds) to avoid rate limiting
@@ -125,11 +138,13 @@ python aec_checker.py
 5. Monitor the log file for CAPTCHA warnings
 
 ### For Resume After Interruption
+
 1. Don't delete the output file
 2. TUI will automatically detect and offer to resume
 3. Or use `--skip N` where N is the number of completed records
 
 ### For Best Reliability
+
 1. Use lower thread counts (1-2) for sensitive operations
 2. Increase delays if you see repeated CAPTCHAs
 3. Set max-retries to 3-5 for flaky connections
@@ -157,12 +172,14 @@ python aec_checker.py
 ## Migration Guide
 
 ### Existing Users
+
 - All existing functionality preserved
 - Command-line interface unchanged (new args are optional)
 - Output format unchanged
 - No breaking changes to workflows
 
 ### New Features Usage
+
 1. Add `--dry-run` to your existing commands to test validation
 2. Gradually introduce `--headless` and threading as needed
 3. Adjust delays based on your experience with rate limiting
@@ -171,6 +188,7 @@ python aec_checker.py
 ## Testing Recommendations
 
 Before running on full dataset:
+
 1. Test with 10-20 records first
 2. Verify output format meets expectations
 3. Check log file for errors or warnings
@@ -180,6 +198,7 @@ Before running on full dataset:
 ## Support
 
 For issues or questions:
+
 1. Check `aec_checker.log` for detailed error messages
 2. Run with `--dry-run` to validate input data first
 3. Review this document for configuration options

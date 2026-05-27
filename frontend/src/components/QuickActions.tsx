@@ -1,81 +1,78 @@
+import { Search, RefreshCw, Download, Zap, Calendar } from "lucide-react";
+
 interface QuickActionsProps {
-    selectedCount: number;
-    onCheckSelected: () => void;
-    onRetryCaptchas: () => void;
-    onExport: () => void;
-    onExportAll: () => void;
-    onBulkActions: () => void;
-    onReminders: () => void;
-    refreshTimer: string;
+  selectedCount: number;
+  onCheckSelected: () => void;
+  onRetryCaptchas: () => void;
+  onExport: () => void;
+  onExportAll: () => void;
+  onBulkActions: () => void;
+  onReminders: () => void;
+  refreshTimer: string;
 }
 
 export function QuickActions({
-    selectedCount,
-    onCheckSelected,
-    onRetryCaptchas,
-    onExport,
-    onExportAll,
-    onBulkActions,
-    onReminders,
-    refreshTimer
+  selectedCount,
+  onCheckSelected,
+  onRetryCaptchas,
+  onExport,
+  onExportAll,
+  onBulkActions,
+  onReminders,
 }: QuickActionsProps) {
-    return (
-        <div className="bg-white p-4 rounded-xl shadow-md border border-slate-200 mb-6">
-            <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm font-semibold text-slate-700 mr-2">
-                    Quick Actions:
-                </span>
+  const buttonBase = "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors font-medium text-sm";
 
-                <button
-                    onClick={onCheckSelected}
-                    disabled={selectedCount === 0}
-                    className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <span>🔍</span> Check Selected ({selectedCount})
-                </button>
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <button
+        onClick={onCheckSelected}
+        disabled={selectedCount === 0}
+        className={`${buttonBase} bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed`}
+      >
+        <Search className="w-4 h-4" />
+        Check ({selectedCount})
+      </button>
 
-                <button
-                    onClick={onRetryCaptchas}
-                    className="bg-orange-50 text-orange-600 hover:bg-orange-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2"
-                >
-                    <span>🔄</span> Retry Captchas
-                </button>
+      <button
+        onClick={onRetryCaptchas}
+        className={`${buttonBase} bg-orange-500/15 text-orange-400 hover:bg-orange-500/25`}
+      >
+        <RefreshCw className="w-4 h-4" />
+        Retry Captchas
+      </button>
 
-                <button
-                    onClick={onExport}
-                    className="bg-green-50 text-green-600 hover:bg-green-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2"
-                >
-                    <span>📊</span> Export Selected
-                </button>
+      <button
+        onClick={onExport}
+        className={`${buttonBase} bg-green-500/15 text-green-400 hover:bg-green-500/25`}
+      >
+        <Download className="w-4 h-4" />
+        Export
+      </button>
 
-                <button
-                    onClick={onExportAll}
-                    className="bg-slate-50 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2"
-                >
-                    <span>📥</span> Export All
-                </button>
+      <button
+        onClick={onExportAll}
+        className={`${buttonBase} bg-secondary text-muted-foreground hover:bg-secondary/80`}
+      >
+        <Download className="w-4 h-4" />
+        Export All
+      </button>
 
-                <button
-                    onClick={onBulkActions}
-                    disabled={selectedCount === 0}
-                    className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <span>⚡</span> Bulk Actions
-                </button>
+      <button
+        onClick={onBulkActions}
+        disabled={selectedCount === 0}
+        className={`${buttonBase} bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed`}
+      >
+        <Zap className="w-4 h-4" />
+        Bulk
+      </button>
 
-                <button
-                    onClick={onReminders}
-                    className="bg-purple-50 text-purple-600 hover:bg-purple-100 px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2"
-                >
-                    <span>📅</span> Reminders
-                </button>
-
-                <div className="flex-grow"></div>
-
-                <span className="text-xs text-slate-500">
-                    Auto-refresh: {refreshTimer}
-                </span>
-            </div>
-        </div>
-    );
+      <button
+        onClick={onReminders}
+        className={`${buttonBase} bg-amber-500/15 text-amber-400 hover:bg-amber-500/25`}
+      >
+        <Calendar className="w-4 h-4" />
+        Reminders
+      </button>
+    </div>
+  );
 }
