@@ -41,6 +41,7 @@ export default {
         brand: {
           DEFAULT: "#3553eb",
           hover: "#2842d0",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -69,6 +70,11 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        card: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+        'card-lg': '0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.2)',
+        'inner-subtle': 'inset 0 1px 2px 0 rgb(0 0 0 / 0.1)',
+      },
       keyframes: {
         "fade-in": {
           from: { opacity: "0", transform: "translateY(6px)" },
@@ -82,14 +88,7 @@ export default {
       animation: {
         "fade-in": "fade-in 0.2s ease-out",
         "slide-in": "slide-in 0.2s ease-out",
-      boxShadow: {
-        'card': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-        'card-lg': '0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.2)',
-        'inner-subtle': 'inset 0 1px 2px 0 rgb(0 0 0 / 0.1)',
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.2s ease-out',
-        'slide-up': 'slideUp 0.3s ease-out',
+        "slide-up": "slideUp 0.3s ease-out",
       },
     },
   },

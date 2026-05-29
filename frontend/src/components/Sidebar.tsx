@@ -56,17 +56,24 @@ export function Sidebar() {
           borderBottom: "1px solid var(--navy-border)",
         }}
       >
-        <span
-          style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontWeight: 800,
-            fontSize: 17,
-            color: "oklch(98.5% 0.006 240)",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          PoliCRM
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <img
+            src="/policrm-logo-transparent.png"
+            alt="PoliCRM Logo"
+            style={{ width: 24, height: 24, objectFit: "contain" }}
+          />
+          <span
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontWeight: 800,
+              fontSize: 17,
+              color: "oklch(98.5% 0.006 240)",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            PoliCRM
+          </span>
+        </div>
         <div
           style={{
             fontSize: 10.5,
@@ -74,7 +81,7 @@ export function Sidebar() {
             letterSpacing: "0.07em",
             textTransform: "uppercase",
             color: "oklch(55% 0.015 240)",
-            marginTop: 2,
+            marginTop: 4,
           }}
         >
           Operations Console

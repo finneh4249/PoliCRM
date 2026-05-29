@@ -48,17 +48,24 @@ export function LandingPage() {
           zIndex: 10,
         }}
       >
-        <span
-          style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontWeight: 800,
-            fontSize: 17,
-            color: "oklch(98% 0.006 240)",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          PoliCRM
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <img
+            src="/policrm-logo-transparent.png"
+            alt="PoliCRM Logo"
+            style={{ width: 26, height: 26, objectFit: "contain" }}
+          />
+          <span
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontWeight: 800,
+              fontSize: 17,
+              color: "oklch(98% 0.006 240)",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            PoliCRM
+          </span>
+        </div>
 
         <Link
           to="/login"

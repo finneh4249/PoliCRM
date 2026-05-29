@@ -64,23 +64,36 @@ export default function Login() {
         }}
       >
         {/* Wordmark */}
-        <div style={{ marginBottom: 36, textAlign: "center" }}>
+        <div style={{ marginBottom: 36, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Link
             to="/"
             style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 800,
-              fontSize: 22,
-              color: "oklch(97% 0.006 240)",
-              letterSpacing: "-0.01em",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 12,
               textDecoration: "none",
             }}
           >
-            PoliCRM
+            <img
+              src="/policrm-logo-transparent.png"
+              alt="PoliCRM Logo"
+              style={{ width: 36, height: 36, objectFit: "contain" }}
+            />
+            <span
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontWeight: 800,
+                fontSize: 24,
+                color: "oklch(97% 0.006 240)",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              PoliCRM
+            </span>
           </Link>
           <div
             style={{
-              marginTop: 6,
+              marginTop: 8,
               fontSize: 13.5,
               color: "oklch(55% 0.018 240)",
             }}

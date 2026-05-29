@@ -158,6 +158,37 @@
   .glow-pink {
     box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 0 40px rgba(236, 72, 153, 0.2);
   }
+
+  /* Sidebar nav item styling */
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: oklch(75% 0.015 240);
+    transition-property: background-color, color;
+    transition-duration: 150ms;
+    transition-timing-function: ease-out;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background-color: oklch(100% 0 0 / 0.06);
+    color: oklch(95% 0.005 240);
+  }
+
+  .nav-item.active {
+    background-color: oklch(100% 0 0 / 0.1);
+    color: oklch(98% 0.006 240);
+  }
+
+  .nav-item.active svg {
+    color: oklch(68% 0.22 260);
+  }
 }
 
 /* Keyframe Animations */
