@@ -77,15 +77,17 @@ export default function Login() {
             <img
               src="/policrm-logo-transparent.png"
               alt="PoliCRM Logo"
-              style={{ width: 36, height: 36, objectFit: "contain" }}
+              style={{ width: 32, height: 32, objectFit: "contain" }}
             />
+            {/* Wordmark: IBM Plex Mono Medium uppercase tracked 0.08em — brand spec */}
             <span
               style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontWeight: 800,
-                fontSize: 24,
-                color: "oklch(97% 0.006 240)",
-                letterSpacing: "-0.01em",
+                fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+                fontWeight: 500,
+                fontSize: 18,
+                color: "#e2e8f0",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
               }}
             >
               PoliCRM
@@ -93,9 +95,11 @@ export default function Login() {
           </Link>
           <div
             style={{
-              marginTop: 8,
-              fontSize: 13.5,
-              color: "oklch(55% 0.018 240)",
+              marginTop: 10,
+              fontFamily: "'IBM Plex Sans', ui-sans-serif, sans-serif",
+              fontSize: 13,
+              fontWeight: 300,
+              color: "#475569",
             }}
           >
             Sign in to your operations console
@@ -229,15 +233,18 @@ export default function Login() {
           <Link
             to="/"
             style={{
+              fontFamily: "'IBM Plex Sans', ui-sans-serif, sans-serif",
               fontSize: 12.5,
-              color: "oklch(48% 0.015 260)",
-              transition: "color 150ms ease-out",
+              fontWeight: 300,
+              color: "#475569",
+              transition: "color 200ms ease-out",
+              textDecoration: "none",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.color = "oklch(72% 0.18 260)";
+              (e.currentTarget as HTMLAnchorElement).style.color = "#2dd4bf";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.color = "oklch(48% 0.015 260)";
+              (e.currentTarget as HTMLAnchorElement).style.color = "#475569";
             }}
           >
             ← Back to home

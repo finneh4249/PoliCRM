@@ -4,8 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ["Plus Jakarta Sans", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Sora", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["IBM Plex Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["IBM Plex Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -39,8 +40,8 @@ export default {
           border: "#334155",
         },
         brand: {
-          DEFAULT: "#3553eb",
-          hover: "#2842d0",
+          DEFAULT: "#0D9488",
+          hover: "#0f766e",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",

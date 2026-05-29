@@ -108,7 +108,7 @@ function fmtDate(iso: string): string {
 function jobStatusColor(s: ImportJob["status"]): string {
   return s === "complete" ? "var(--status-active)" :
          s === "failed"   ? "var(--status-suspended)" :
-         s === "running"  ? "var(--ops-blue)" : "var(--slate-muted)";
+         s === "running"  ? "var(--civic-teal)" : "var(--slate-muted)";
 }
 
 /* ─── Component ──────────────────────────────────────────────────────────── */
@@ -162,7 +162,7 @@ export default function Dashboard() {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--canvas)" }}>
         <div className="animate-spin-slow" style={{ width: 28, height: 28 }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--ops-blue)" strokeWidth="2.5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--civic-teal)" strokeWidth="2.5">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
           </svg>
         </div>
@@ -178,7 +178,7 @@ export default function Dashboard() {
     { name: "Pass", value: stats.verified_count, color: "var(--status-active)" },
     { name: "Partial", value: stats.partial_match_count, color: "var(--status-lapsed)" },
     { name: "Fail", value: stats.failed_count, color: "var(--status-suspended)" },
-    { name: "Captcha", value: stats.captcha_count, color: "oklch(68% 0.22 260)" },
+    { name: "Captcha", value: stats.captcha_count, color: "#2dd4bf" },
     { name: "Unchecked", value: stats.unchecked_count, color: "var(--slate-muted)" },
   ];
 
@@ -235,7 +235,7 @@ export default function Dashboard() {
             label: "Total Members",
             value: stats.total_members.toLocaleString("en-AU"),
             sub: `+${stats.new_members_30d} in last 30d`,
-            color: "var(--ops-blue)",
+            color: "var(--civic-teal)",
           },
           {
             icon: ShieldCheck,
@@ -295,7 +295,7 @@ export default function Dashboard() {
               </div>
               <span className="stat-label" style={{ fontSize: 12 }}>{label}</span>
             </div>
-            <div className="stat-value" style={{ fontSize: 32, fontWeight: 800 }}>{value}</div>
+            <div className="stat-value" style={{ fontSize: 32, fontWeight: 600 }}>{value}</div>
             <div style={{ fontSize: 12, color: "var(--slate-muted)", marginTop: 6 }}>{sub}</div>
           </div>
         ))}
@@ -374,7 +374,7 @@ export default function Dashboard() {
                 contentStyle={{ background: "rgba(15,23,42,0.96)", border: "1px solid var(--console-border)", borderRadius: 8 }}
                 itemStyle={{ color: "#f8fafc", fontSize: 13 }}
               />
-              <Bar dataKey="count" fill="var(--ops-blue)" radius={[4, 4, 0, 0]} barSize={36} />
+              <Bar dataKey="count" fill="var(--civic-teal)" radius={[4, 4, 0, 0]} barSize={36} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -398,8 +398,8 @@ export default function Dashboard() {
           <AreaChart data={growthChartData}>
             <defs>
               <linearGradient id="colorGrowth" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--ops-blue)" stopOpacity={0.15}/>
-                <stop offset="95%" stopColor="var(--ops-blue)" stopOpacity={0.0}/>
+                <stop offset="5%" stopColor="var(--civic-teal)" stopOpacity={0.15}/>
+                <stop offset="95%" stopColor="var(--civic-teal)" stopOpacity={0.0}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--console-border)" vertical={false} />
@@ -409,7 +409,7 @@ export default function Dashboard() {
               contentStyle={{ background: "rgba(15,23,42,0.96)", border: "1px solid var(--console-border)", borderRadius: 8 }}
               itemStyle={{ color: "#f8fafc", fontSize: 13 }}
             />
-            <Area type="monotone" dataKey="members" stroke="var(--ops-blue)" strokeWidth={2.5} fillOpacity={1} fill="url(#colorGrowth)" />
+            <Area type="monotone" dataKey="members" stroke="var(--civic-teal)" strokeWidth={2.5} fillOpacity={1} fill="url(#colorGrowth)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -435,7 +435,7 @@ export default function Dashboard() {
           >
             <h2
               style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "'Sora', ui-sans-serif, system-ui, sans-serif",
                 fontWeight: 700,
                 fontSize: 15,
                 color: "var(--navy)",
@@ -452,7 +452,7 @@ export default function Dashboard() {
                 gap: 4,
                 fontSize: 12.5,
                 fontWeight: 600,
-                color: "var(--ops-blue)",
+                color: "var(--civic-teal)",
               }}
             >
               View all <ChevronRight size={13} strokeWidth={2.5} />
@@ -511,7 +511,7 @@ export default function Dashboard() {
           <section>
             <h2
               style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "'Sora', ui-sans-serif, system-ui, sans-serif",
                 fontWeight: 700,
                 fontSize: 15,
                 color: "var(--navy)",
@@ -610,7 +610,7 @@ export default function Dashboard() {
               <div>
                 <div
                   style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "'Sora', ui-sans-serif, system-ui, sans-serif",
                     fontWeight: 700,
                     fontSize: 13.5,
                     color: "var(--navy)",
@@ -637,7 +637,7 @@ export default function Dashboard() {
                     style={{
                       height: "100%",
                       width: `${(doneCount / totalCount) * 100}%`,
-                      background: "var(--ops-blue)",
+                      background: "var(--civic-teal)",
                       borderRadius: 99,
                     }}
                   />

@@ -127,7 +127,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
     if (!res) return "var(--slate-muted)";
     if (res === "Pass") return "var(--status-active)";
     if (res === "Partial") return "var(--status-lapsed)";
-    if (res === "Captcha") return "oklch(68% 0.22 260)";
+    if (res === "Captcha") return "#2dd4bf";
     return "var(--status-suspended)"; // Fail states
   };
 
@@ -184,7 +184,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
                 style={{
                   margin: 0,
                   fontSize: 20,
-                  fontWeight: 700,
+                  fontWeight: 600,
                   color: "var(--navy)",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
@@ -222,7 +222,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
           {loading ? (
             <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
               <div className="animate-spin-slow" style={{ width: 28, height: 28 }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--ops-blue)" strokeWidth="2.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--civic-teal)" strokeWidth="2.5">
                   <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                 </svg>
               </div>
@@ -256,7 +256,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
               {/* Tags Section */}
               {member.tags && member.tags.length > 0 && (
                 <div>
-                  <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 10px 0" }}>
+                  <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 10px 0" }}>
                     <Tag size={12} /> Tags
                   </h4>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -282,7 +282,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
 
               {/* Section: Contact Details */}
               <div>
-                <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 12px 0" }}>
+                <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 12px 0" }}>
                   <User size={12} /> Contact Information
                 </h4>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "var(--canvas)", padding: 16, borderRadius: 10, border: "1px solid var(--console-border)" }}>
@@ -317,7 +317,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
 
               {/* Section: Address Details */}
               <div>
-                <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 12px 0" }}>
+                <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 12px 0" }}>
                   <MapPin size={12} /> Address details
                 </h4>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "var(--canvas)", padding: 16, borderRadius: 10, border: "1px solid var(--console-border)" }}>
@@ -352,7 +352,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
 
               {/* Section: AEC Check Results / Compliance */}
               <div>
-                <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 12px 0" }}>
+                <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 12px 0" }}>
                   <Shield size={12} /> AEC Verification Status
                 </h4>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "var(--canvas)", padding: 16, borderRadius: 10, border: "1px solid var(--console-border)" }}>
@@ -360,7 +360,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
                     <span style={{ color: "var(--slate-muted)" }}>Status</span>
                     <span
                       style={{
-                        fontWeight: 700,
+                        fontWeight: 600,
                         fontSize: 12,
                         textTransform: "uppercase",
                         letterSpacing: "0.04em",
@@ -401,7 +401,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
 
               {/* Section: Membership Lifecycle */}
               <div>
-                <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 12px 0" }}>
+                <h4 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 12px 0" }}>
                   <Calendar size={12} /> Membership Details
                 </h4>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "var(--canvas)", padding: 16, borderRadius: 10, border: "1px solid var(--console-border)" }}>
@@ -431,7 +431,7 @@ export function MemberDetailDrawer({ memberId, onClose, fallbackMember }: Member
               {/* Notes Section */}
               {member.notes && member.notes.length > 0 && (
                 <div>
-                  <h4 style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 10px 0" }}>
+                  <h4 style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--slate-muted)", margin: "0 0 10px 0" }}>
                     Notes
                   </h4>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

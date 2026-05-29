@@ -62,13 +62,15 @@ export function Sidebar() {
             alt="PoliCRM Logo"
             style={{ width: 24, height: 24, objectFit: "contain" }}
           />
+          {/* Wordmark: IBM Plex Mono Medium, uppercase, tracked 0.08em — brand spec */}
           <span
             style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 800,
-              fontSize: 17,
-              color: "oklch(98.5% 0.006 240)",
-              letterSpacing: "-0.01em",
+              fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+              fontWeight: 500,
+              fontSize: 14,
+              color: "#e2e8f0",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
             }}
           >
             PoliCRM
@@ -76,12 +78,13 @@ export function Sidebar() {
         </div>
         <div
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
-            letterSpacing: "0.07em",
+            fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+            fontSize: 10,
+            fontWeight: 400,
+            letterSpacing: "0.06em",
             textTransform: "uppercase",
-            color: "oklch(55% 0.015 240)",
-            marginTop: 4,
+            color: "#475569",
+            marginTop: 5,
           }}
         >
           Operations Console
@@ -141,20 +144,21 @@ export function Sidebar() {
           className="nav-item"
           title="Sign out"
         >
-          {/* Avatar initial */}
+          {/* Avatar initial — Civic Teal tones */}
           <div
             style={{
               width: 28,
               height: 28,
               borderRadius: "50%",
-              background: "oklch(52% 0.22 260 / 0.25)",
-              border: "1px solid oklch(52% 0.22 260 / 0.4)",
+              background: "rgba(13, 148, 136, 0.20)",
+              border: "1px solid rgba(13, 148, 136, 0.35)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
               fontSize: 11,
-              fontWeight: 700,
-              color: "oklch(72% 0.18 260)",
+              fontWeight: 500,
+              color: "#2dd4bf",
               flexShrink: 0,
             }}
           >
@@ -164,9 +168,10 @@ export function Sidebar() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
+                fontFamily: "'IBM Plex Sans', ui-sans-serif, sans-serif",
                 fontSize: 12.5,
-                fontWeight: 600,
-                color: "oklch(90% 0.008 240)",
+                fontWeight: 400,
+                color: "#e2e8f0",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",

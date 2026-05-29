@@ -33,7 +33,7 @@ function jobStatusStyle(s: ImportJob["status"]): { color: string; label: string 
   return {
     complete: { color: "var(--status-active)",    label: "Complete"  },
     failed:   { color: "var(--status-suspended)", label: "Failed"    },
-    running:  { color: "var(--ops-blue)",         label: "Running"   },
+    running:  { color: "var(--civic-teal)",         label: "Running"   },
     pending:  { color: "var(--slate-muted)",      label: "Pending"   },
   }[s];
 }
@@ -261,7 +261,7 @@ export default function Import() {
             onDrop={handleDrop}
             onClick={() => fileRef.current?.click()}
             style={{
-              border: `2px dashed ${dragOver ? "var(--ops-blue)" : "var(--console-border)"}`,
+              border: `2px dashed ${dragOver ? "var(--civic-teal)" : "var(--console-border)"}`,
               borderRadius: 12,
               padding: "40px 32px",
               display: "flex",
@@ -270,7 +270,7 @@ export default function Import() {
               justifyContent: "center",
               gap: 12,
               cursor: "pointer",
-              background: dragOver ? "oklch(52% 0.22 260 / 0.04)" : "transparent",
+              background: dragOver ? "rgba(13, 148, 136, 0.04)" : "transparent",
               transition: "border-color 150ms ease-out, background-color 150ms ease-out",
               textAlign: "center",
             }}
@@ -288,13 +288,13 @@ export default function Import() {
             <Upload
               size={28}
               strokeWidth={1.5}
-              style={{ color: dragOver ? "var(--ops-blue)" : "var(--slate-muted)" }}
+              style={{ color: dragOver ? "var(--civic-teal)" : "var(--slate-muted)" }}
             />
             <div>
               <div
                 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 700,
+                  fontFamily: "'Sora', ui-sans-serif, system-ui, sans-serif",
+                  fontWeight: 600,
                   fontSize: 15,
                   color: "oklch(22% 0.03 260)",
                   marginBottom: 4,
@@ -339,13 +339,13 @@ export default function Import() {
                 gap: 12,
                 marginTop: 16,
                 padding: "12px 16px",
-                background: "oklch(52% 0.22 260 / 0.06)",
-                border: "1px solid oklch(52% 0.22 260 / 0.2)",
+                background: "rgba(13, 148, 136, 0.06)",
+                border: "1px solid rgba(13, 148, 136, 0.20)",
                 borderRadius: 10,
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <FileText size={16} strokeWidth={2} style={{ color: "var(--ops-blue)", flexShrink: 0 }} />
+                <FileText size={16} strokeWidth={2} style={{ color: "var(--civic-teal)", flexShrink: 0 }} />
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(22% 0.03 260)" }}>
                     {selectedFile.name}
@@ -399,12 +399,12 @@ export default function Import() {
               gap: 10,
               marginBottom: 20,
               padding: "10px 14px",
-              background: "oklch(52% 0.22 260 / 0.06)",
-              border: "1px solid oklch(52% 0.22 260 / 0.18)",
+              background: "rgba(13, 148, 136, 0.06)",
+              border: "1px solid rgba(13, 148, 136, 0.18)",
               borderRadius: 8,
             }}
           >
-            <LinkIcon size={13} strokeWidth={2} style={{ color: "var(--ops-blue)", flexShrink: 0, marginTop: 1 }} />
+            <LinkIcon size={13} strokeWidth={2} style={{ color: "var(--civic-teal)", flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontSize: 12.5, color: "oklch(38% 0.03 260)", lineHeight: 1.5 }}>
               The importer fetches people in batches of 100 via the NationBuilder v2 API. Large
               databases may take several minutes. Existing records are deduplicated by NationBuilder ID.
@@ -417,8 +417,8 @@ export default function Import() {
       {/* ── Import history ────────────────────────────────────────────── */}
       <h2
         style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          fontWeight: 700,
+          fontFamily: "'Sora', ui-sans-serif, system-ui, sans-serif",
+          fontWeight: 600,
           fontSize: 16,
           color: "oklch(19% 0.03 260)",
           margin: "0 0 14px",
@@ -471,7 +471,7 @@ export default function Import() {
                       <span
                         style={{
                           fontSize: 11,
-                          fontWeight: 700,
+                          fontWeight: 600,
                           letterSpacing: "0.06em",
                           textTransform: "uppercase",
                           color: "var(--slate-muted)",
@@ -502,7 +502,7 @@ export default function Import() {
                       <span
                         style={{
                           fontSize: 10.5,
-                          fontWeight: 700,
+                          fontWeight: 600,
                           letterSpacing: "0.06em",
                           textTransform: "uppercase",
                           color,
