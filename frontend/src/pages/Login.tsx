@@ -37,7 +37,8 @@ export default function Login() {
     try {
       await login(email.trim(), password);
       navigate("/app/dashboard", { replace: true });
-    } catch {
+    } catch (err: unknown) {
+      console.debug("Login attempt failed:", (err instanceof Error ? err.message : err));
       setError("Sign in failed. Check your credentials and try again.");
     } finally {
       setSubmitting(false);

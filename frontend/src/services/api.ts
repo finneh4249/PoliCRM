@@ -8,14 +8,27 @@
  *   VITE_API_BASE_URL=http://localhost:8080
  */
 
-const API_BASE =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-  "http://localhost:8080";
+function validateApiBase(candidate?: string): string {
+  const raw = candidate ?? "http://localhost:8080";
+  try {
+    const url = new URL(raw);
+    if (url.protocol === "http:" && url.hostname !== "localhost" && url.hostname !== "127.0.0.1") {
+      throw new Error(`Insecure HTTP API base URL is only allowed for localhost, got: ${raw}`);
+    }
+  } catch (err) {
+    if (err instanceof TypeError) {
+      throw new Error(`Invalid VITE_API_BASE_URL: "${raw}" is not a valid URL`);
+    }
+    throw err;
+  }
+  return raw;
+}
+
+const API_BASE = validateApiBase(import.meta.env.VITE_API_BASE_URL as string | undefined);
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
-export interface ApiError {
+export interface ApiError extends Error {
   status: number;
-  message: string;
 }
 
 export interface Person {
@@ -25,6 +38,7 @@ export interface Person {
   email?: string; // encrypted at rest — may be absent
   primary_state?: string;
   primary_zip?: string;
+  membership_status?: string;
   created_at: string;
   updated_at: string;
 }
@@ -70,7 +84,8 @@ async function request<T>(
     } catch {
       // ignore JSON parse errors
     }
-    throw { status: res.status, message } satisfies ApiError;
+    const err = Object.assign(new Error(message), { status: res.status });
+    throw err;
   }
 
   // 204 No Content
@@ -97,7 +112,7 @@ export const personsApi = {
   },
 
   get(id: string): Promise<Person> {
-    return request<Person>(`/persons/${id}`);
+    return request<Person>(`/persons/${encodeURIComponent(id)}`);
   },
 };
 
@@ -108,7 +123,7 @@ export const importApi = {
   },
 
   get(id: string): Promise<ImportJob> {
-    return request<ImportJob>(`/import/jobs/${id}`);
+    return request<ImportJob>(`/import/jobs/${encodeURIComponent(id)}`);
   },
 
   uploadCsv(file: File): Promise<ImportJob> {

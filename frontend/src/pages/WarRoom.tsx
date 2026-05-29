@@ -96,9 +96,13 @@ export function WarRoom() {
         ]);
 
         if (geoJson.status === "fulfilled")      setGeoJsonData(geoJson.value);
+        else console.error("GeoJSON fetch failed:", geoJson.reason);
         if (electorates.status === "fulfilled")  setCounts(electorates.value);
+        else console.error("analyticsApi.electorateCounts failed:", electorates.reason);
         if (growth.status === "fulfilled")       setGrowthData(growth.value);
+        else console.error("analyticsApi.growth failed:", growth.reason);
         if (geo.status === "fulfilled")          setGeoData(geo.value);
+        else console.error("analyticsApi.geographic failed:", geo.reason);
       } finally {
         setLoading(false);
       }
@@ -140,9 +144,10 @@ export function WarRoom() {
     const v = counts.verified[name] || 0;
     const p = counts.projected[name] || 0;
 
+    const escapedName = name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     layer.bindTooltip(
       `<div style="background:rgba(15,23,42,0.96);padding:12px;border-radius:8px;border:1px solid #334155;font-family:Inter,sans-serif">
-        <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:8px">${name}</div>
+        <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:8px">${escapedName}</div>
         <div style="color:#4ade80;margin-bottom:3px;font-size:13px">Members: ${v}</div>
         <div style="color:#fbbf24;font-size:13px">Projected: ${p}</div>
         <div style="color:#64748b;font-size:11px;margin-top:8px;border-top:1px solid #334155;padding-top:6px">Total: ${v + p}</div>

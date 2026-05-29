@@ -30,9 +30,14 @@ export function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+      // Stay on current page; user can retry
+    }
   };
 
   return (
@@ -143,6 +148,7 @@ export function Sidebar() {
           }}
           className="nav-item"
           title="Sign out"
+          aria-label="Sign out"
         >
           {/* Avatar initial — Civic Teal tones */}
           <div
